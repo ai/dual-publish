@@ -13,7 +13,8 @@
   "dependencies": {
     "chalk": "^3.0.0",
     "clean-publish": "^1.1.4",
-    "globby": "^11.0.0"
+    "globby": "^11.0.0",
+    "line-column": "^1.0.2"
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",

@@ -1,5 +1,6 @@
 let { join, sep } = require('path')
 let { promisify } = require('util')
+let lineColumn = require('line-column')
 let globby = require('globby')
 let fs = require('fs')
 
@@ -15,7 +16,9 @@ function error (msg) {
 function getPath (file, statement) {
   let path = statement.match(/require\(([^)]+)\)/)[1]
   if (/\/index["']/.test(path)) {
-    throw error('Replace `index` in require() to `index.js` at ' + file)
+    throw error(
+      'Replace `index` in require() to `index.js` at ' + file
+    )
   }
   if (/^["']..?(["']$|\/)/.test(path)) {
     if (/\/index\.js(["'])$/.test(path)) {
@@ -43,16 +46,27 @@ module.exports = async function (dir) {
     let cjs = await readFile(join(dir, file))
     let esm = cjs
       .toString()
-      .replace(/module.exports\s*=\s*/, 'export default ')
-      .replace(/(let|const)\s+(\S+)\s+=\s+require\(([^)]+)\)/g, statement => {
-        let name = statement.match(/(let|const)\s+(\S+)\s+=/)[2]
-        let path = getPath(file, statement)
-        return `import ${ name } from ${ path }`
-      })
-      .replace(/require\(([^)]+)\)/g, statement => {
-        let path = getPath(file, statement)
-        return `import ${ path }`
-      })
+      .split('\n')
+      .map(line => line
+        .replace(/^module.exports\s*=\s*/, 'export default ')
+        .replace(/^(let|const|var)\s+(\S+)\s+=\s+require\(([^)]+)\)/g, s => {
+          let name = s.match(/(let|const|var)\s+(\S+)\s+=/)[2]
+          let path = getPath(file, s)
+          return `import ${ name } from ${ path }`
+        })
+        .replace(/^require\(([^)]+)\)/g, s => {
+          let path = getPath(file, s)
+          return `import ${ path }`
+        })
+      )
+      .join('\n')
+
+    let index = esm.search(/(\W|^)require\(/)
+    if (index !== -1) {
+      let { line, col } = lineColumn(esm).fromIndex(index)
+      throw error(`Unsupported require() at ${ file }:${ line }:${ col }`)
+    }
+
     await writeFile(join(dir, file.replace(/\.js$/, '.mjs')), esm)
   }))
 }

@@ -1,8 +1,8 @@
 let path = require('path')
 
-let a = require('./a')
+const a = require('./a')
 let b = require('./b/index.js')
-let c = require('./c/')
+var c = require('./c/')
 require('../lib/d')
 
 a(path.join('a', 'b'))

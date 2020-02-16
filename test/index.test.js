@@ -83,3 +83,15 @@ it('throws on index require without .js', async () => {
     'Replace `index` in require() to `index.js` at index.js'
   )
 })
+
+it('throws on un-processed require', async () => {
+  let err
+  try {
+    await processDir(join(__dirname, 'fixtures', 'other-error'))
+  } catch (e) {
+    err = e
+  }
+  expect(err.message).toEqual(
+    'Unsupported require() at index.js:1:15'
+  )
+})
