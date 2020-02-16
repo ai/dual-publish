@@ -2,6 +2,7 @@ let { remove, copy, readFile, writeFile } = require('fs-extra')
 let { promisify } = require('util')
 let { tmpdir } = require('os')
 let { join } = require('path')
+let webpack = require('webpack')
 let nanoid = require('nanoid/non-secure')
 let globby = require('globby')
 let child = require('child_process')
@@ -10,23 +11,22 @@ let processDir = require('../process-dir')
 
 let exec = promisify(child.exec)
 
-let dirs = []
+let toClean = []
 
-afterEach(() => Promise.all(dirs.map(i => remove(i))))
+afterEach(() => Promise.all(toClean.map(i => remove(i))))
 
 let esmNode = 'node '
 if (process.version.startsWith('v10.') || process.version.startsWith('v12.')) {
   esmNode = 'node --experimental-modules '
 }
 
-async function copyDirs () {
-  let lib = join(tmpdir(), 'dual-publish-lib-' + nanoid())
-  dirs.push(lib)
-  let runner = join(tmpdir(), 'dual-publish-runner-' + nanoid())
-  dirs.push(runner)
-  await copy(join(__dirname, 'fixtures', 'lib'), lib)
-  await copy(join(__dirname, 'fixtures', 'runner'), runner)
-  return [lib, runner]
+function copyDirs (...dirs) {
+  return Promise.all(dirs.map(async dir => {
+    let tmp = join(tmpdir(), `dual-publish-${ dir }-${ nanoid() }`)
+    await copy(join(__dirname, 'fixtures', dir), tmp)
+    toClean.push(tmp)
+    return tmp
+  }))
 }
 
 async function replaceConsole (dir) {
@@ -48,7 +48,7 @@ function removeEsmWarning (stderr) {
 }
 
 it('compiles for Node.js', async () => {
-  let [lib, runner] = await copyDirs()
+  let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
   await replaceConsole(lib)
   await exec(`yarn add lib@${ lib }`, { cwd: runner })
@@ -60,6 +60,33 @@ it('compiles for Node.js', async () => {
   let esm = await exec(esmNode + join(runner, 'index.mjs'))
   expect(removeEsmWarning(esm.stderr)).toEqual('')
   expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
+})
+
+it('works with bundlers', async () => {
+  let [lib, client] = await copyDirs('lib', 'client')
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${ lib }`, { cwd: client })
+
+  await new Promise((resolve, reject) => {
+    webpack({
+      entry: join(client, 'index.js'),
+      output: {
+        path: client
+      }
+    }, err => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+
+  let buffer = await readFile(join(client, 'main.js'))
+  let bundle = buffer.toString()
+  expect(bundle).toContain('esm ')
+  expect(bundle).not.toContain('cjs ')
 })
 
 it('throws on non-index file', async () => {
