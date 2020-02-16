@@ -8,11 +8,12 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "test": "eslint . && yaspeller *.md"
+    "test": "jest-ci --coverage && eslint-ci . && yaspeller-ci *.md"
   },
   "dependencies": {
     "chalk": "^3.0.0",
-    "clean-publish": "^1.1.4"
+    "clean-publish": "^1.1.4",
+    "globby": "^11.0.0"
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@logux/eslint-config": "^36.0.0",
     "eslint": "^6.8.0",
+    "eslint-ci": "^1.0.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-jest": "^23.7.0",
@@ -29,15 +31,30 @@
     "eslint-plugin-security": "^1.4.0",
     "eslint-plugin-standard": "^4.0.1",
     "eslint-plugin-unicorn": "^16.1.1",
+    "fs-extra": "^8.1.0",
     "husky": "^4.2.3",
     "jest": "^25.1.0",
+    "jest-ci": "^0.1.0",
     "lint-staged": "^10.0.2",
-    "yaspeller": "^6.0.2"
+    "nanoid": "^2.1.11",
+    "yaspeller": "^6.0.2",
+    "yaspeller-ci": "^1.0.1"
   },
   "eslintConfig": {
     "extends": "@logux/eslint-config",
     "rules": {
       "global-require": "off"
+    }
+  },
+  "eslintIgnore": [
+    "test/fixtures/"
+  ],
+  "jest": {
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": {
+        "statements": 100
+      }
     }
   },
   "lint-staged": {

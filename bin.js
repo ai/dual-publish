@@ -31,6 +31,10 @@ async function run () {
 }
 
 run().catch(e => {
-  error(chalk.red(e.stack))
+  if (e.own) {
+    error(chalk.red(e.message))
+  } else {
+    error(chalk.red(e.stack))
+  }
   process.exit(1)
 })
