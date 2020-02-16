@@ -14,6 +14,11 @@ let dirs = []
 
 afterEach(() => Promise.all(dirs.map(i => remove(i))))
 
+let esmNode = 'node '
+if (process.version.startsWith('v10.')) {
+  esmNode = 'node --experimental-modules '
+}
+
 async function copyDirs () {
   let lib = join(tmpdir(), 'dual-publish-lib-' + nanoid())
   dirs.push(lib)
@@ -52,7 +57,7 @@ it('compiles for Node.js', async () => {
   expect(cjs.stderr).toEqual('')
   expect(cjs.stdout).toEqual('cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\n')
 
-  let esm = await exec('node ' + join(runner, 'index.mjs'))
+  let esm = await exec(esmNode + join(runner, 'index.mjs'))
   expect(removeEsmWarning(esm.stderr)).toEqual('')
   expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
 })
