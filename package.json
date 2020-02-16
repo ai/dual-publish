@@ -11,6 +11,7 @@
     "test": "eslint . && yaspeller *.md"
   },
   "dependencies": {
+    "chalk": "^3.0.0",
     "clean-publish": "^1.1.4"
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
@@ -34,7 +35,10 @@
     "yaspeller": "^6.0.2"
   },
   "eslintConfig": {
-    "extends": "@logux/eslint-config"
+    "extends": "@logux/eslint-config",
+    "rules": {
+      "global-require": "off"
+    }
   },
   "lint-staged": {
     "*.md": "yaspeller",
