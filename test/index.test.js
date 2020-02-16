@@ -62,7 +62,7 @@ it('compiles for Node.js', async () => {
   expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
 })
 
-it('works with bundlers', async () => {
+it('works with webpack', async () => {
   let [lib, client] = await copyDirs('lib', 'client')
   await processDir(lib)
   await replaceConsole(lib)
@@ -85,8 +85,8 @@ it('works with bundlers', async () => {
 
   let buffer = await readFile(join(client, 'main.js'))
   let bundle = buffer.toString()
-  expect(bundle).toContain('esm ')
   expect(bundle).not.toContain('cjs ')
+  expect(bundle).toContain('esm ')
 })
 
 it('throws on non-index file', async () => {

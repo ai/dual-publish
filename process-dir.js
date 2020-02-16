@@ -1,4 +1,4 @@
-let { join, sep } = require('path')
+let { dirname, join, sep } = require('path')
 let { promisify } = require('util')
 let lineColumn = require('line-column')
 let globby = require('globby')
@@ -68,5 +68,13 @@ module.exports = async function (dir) {
     }
 
     await writeFile(join(dir, file.replace(/\.js$/, '.mjs')), esm)
+
+    let packageJson = join(dir, dirname(file), 'package.json')
+    let packageData = { }
+    if (fs.existsSync(packageJson)) {
+      packageData = JSON.parse(await readFile(packageJson))
+    }
+    packageData.module = 'index.mjs'
+    await writeFile(packageJson, JSON.stringify(packageData, null, 2))
   }))
 }
