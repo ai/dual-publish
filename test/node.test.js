@@ -15,7 +15,7 @@ let dirs = []
 afterEach(() => Promise.all(dirs.map(i => remove(i))))
 
 let esmNode = 'node '
-if (process.version.startsWith('v10.')) {
+if (process.version.startsWith('v10.') || process.version.startsWith('v12.')) {
   esmNode = 'node --experimental-modules '
 }
 
