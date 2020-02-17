@@ -1,8 +1,14 @@
 {
   "name": "dual-publish",
   "version": "0.0.0",
-  "description": "",
-  "keywords": [],
+  "description": "Publish project as dual ES modules and CommonJS package",
+  "keywords": [
+    "esm",
+    "es modules",
+    "dual package",
+    "publish",
+    "npm"
+  ],
   "bin": "./bin.js",
   "engines": {
     "node": ">=10.0.0"
@@ -75,7 +81,17 @@
       " \\(by [^)]+\\)."
     ],
     "dictionary": [
-      "Versioning"
+      "Versioning",
+      "JS",
+      "ES",
+      "CommonJS",
+      "js",
+      "bundlers",
+      "webpack",
+      "GitHub",
+      "configs",
+      "npm",
+      "dirs"
     ]
   }
 }
