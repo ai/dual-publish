@@ -16,3 +16,14 @@ Publish JS project as dual ES modules and CommonJS package to npm.
   <img src="https://evilmartians.com/badges/sponsored-by-evil-martians.svg"
       alt="Sponsored by Evil Martians" width="236" height="54">
 </a>
+
+## Limits
+
+* Node.js ESM users should manually add `index.mjs` to import, because
+  [Conditional Exports] prints warning even for `require()`.
+* Only default export is supported right now, since Node.js doesn’t support
+  combining default and named exports for CommonJS.
+* Every JS file should be in separated dir. `lib/index.js` instead of `lib.js`.
+  We need it to put `package.json` with `module` field for bundlers.
+
+[Conditional Exports]: https://nodejs.org/api/esm.html#esm_conditional_exports

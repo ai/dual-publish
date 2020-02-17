@@ -91,7 +91,9 @@
       "GitHub",
       "configs",
       "npm",
-      "dirs"
+      "dirs",
+      "ESM",
+      "dir"
     ]
   }
 }
