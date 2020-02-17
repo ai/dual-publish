@@ -43,3 +43,7 @@ Publish JS project as dual ES modules and CommonJS package to npm.
    It will create a folder in your project with converted files.
    Review them manually.
 5. Publish your project with `npx dual-publish` instead of `npm publish`.
+
+   ```sh
+   npx dual-publish
+   ```
