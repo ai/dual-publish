@@ -27,3 +27,19 @@ Publish JS project as dual ES modules and CommonJS package to npm.
   We need it to put `package.json` with `module` field for bundlers.
 
 [Conditional Exports]: https://nodejs.org/api/esm.html#esm_conditional_exports
+
+
+## Usage
+
+1. Take a normal CommonJS project with `require()` and `module.exports =`.
+2. Move all files into separated dirs. Like rename `lib.js` to `lib/index.js`.
+   Old `require('./lib')` will work.
+3. Add `dual-publish` to the project:
+
+   ```sh
+   npm i --save-dev dual-publish
+   ```
+4. Test the result by calling `npx dual-publish --without-publish`.
+   It will create a folder in your project with converted files.
+   Review them manually.
+5. Publish your project with `npx dual-publish` instead of `npm publish`.
