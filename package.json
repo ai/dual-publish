@@ -93,7 +93,8 @@
       "npm",
       "dirs",
       "ESM",
-      "dir"
+      "dir",
+      "NanoEvents"
     ]
   }
 }

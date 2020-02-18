@@ -39,10 +39,13 @@ Publish JS project as dual ES modules and CommonJS package to npm.
    ```sh
    npm i --save-dev dual-publish
    ```
-4. Test the result by calling `npx dual-publish --without-publish`.
+4. Add instruction for Node.js ESM users to manually add `index.mjs` in imports.
+   You can copy them from
+   [NanoEvents](https://github.com/ai/nanoevents/#es-modules).
+5. Test the result by calling `npx dual-publish --without-publish`.
    It will create a folder in your project with converted files.
    Review them manually.
-5. Publish your project with `npx dual-publish` instead of `npm publish`.
+6. Publish your project with `npx dual-publish` instead of `npm publish`.
 
    ```sh
    npx dual-publish
