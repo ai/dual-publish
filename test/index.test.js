@@ -30,7 +30,7 @@ function copyDirs (...dirs) {
 }
 
 async function replaceConsole (dir) {
-  let files = await globby('**/*.mjs', { cwd: dir, absolute: true })
+  let files = await globby('**/*.js', { cwd: dir, absolute: true })
   await Promise.all(files.map(async i => {
     let source = await readFile(i)
     let fixed = source.toString().replace(/'cjs /, '\'esm ')

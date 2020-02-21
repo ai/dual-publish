@@ -1,1 +1,1 @@
-import 'lib/index.mjs'
+import 'lib/index.js'
