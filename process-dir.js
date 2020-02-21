@@ -45,7 +45,16 @@ function replaceRequire (source, exports, named, nameless) {
 }
 
 module.exports = async function (dir) {
-  let files = await globby('**/*.js', { cwd: dir })
+  let npmignorePath = join(dir, '.npmignore')
+  let ignore = []
+  if (fs.existsSync(npmignorePath)) {
+    ignore = await readFile(npmignorePath)
+    ignore = ignore.toString().split('\n').filter(i => !!i).map(i => {
+      return i.endsWith(sep) ? i.slice(0, -1) : i
+    })
+  }
+
+  let files = await globby('**/*.js', { ignore, cwd: dir })
 
   for (let file of files) {
     if (!file.endsWith(sep + 'index.js') && file !== 'index.js') {

@@ -62,6 +62,13 @@ it('compiles for Node.js', async () => {
   expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
 })
 
+it('reads npmignore', async () => {
+  let [lib] = await copyDirs('lib')
+  await processDir(lib)
+  let files = await globby('**/*.cjs', { cwd: lib })
+  expect(files).not.toContain('e/index.cjs')
+})
+
 it('works with webpack', async () => {
   let [lib, client] = await copyDirs('lib', 'client')
   await processDir(lib)
