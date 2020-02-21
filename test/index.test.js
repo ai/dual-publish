@@ -16,7 +16,7 @@ let toClean = []
 afterEach(() => Promise.all(toClean.map(i => remove(i))))
 
 let esmNode = 'node '
-if (process.version.startsWith('v10.') || process.version.startsWith('v12.')) {
+if (process.version.startsWith('v12.')) {
   esmNode = 'node --experimental-modules '
 }
 
@@ -57,9 +57,11 @@ it('compiles for Node.js', async () => {
   expect(cjs.stderr).toEqual('')
   expect(cjs.stdout).toEqual('cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\n')
 
-  let esm = await exec(esmNode + join(runner, 'index.mjs'))
-  expect(removeEsmWarning(esm.stderr)).toEqual('')
-  expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
+  if (!process.version.startsWith('v10.')) {
+    let esm = await exec(esmNode + join(runner, 'index.mjs'))
+    expect(removeEsmWarning(esm.stderr)).toEqual('')
+    expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
+  }
 })
 
 it('reads npmignore', async () => {
