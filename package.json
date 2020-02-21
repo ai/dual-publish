@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "chalk": "^3.0.0",
-    "clean-publish": "^1.1.4",
+    "clean-publish": "^1.1.5",
     "globby": "^11.0.0",
     "line-column": "^1.0.2"
   },
@@ -41,12 +41,12 @@
     "fs-extra": "^8.1.0",
     "husky": "^4.2.3",
     "jest": "^25.1.0",
-    "jest-ci": "^0.1.0",
+    "jest-ci": "^0.1.1",
     "lint-staged": "^10.0.2",
     "nanoid": "^2.1.11",
     "webpack": "^4.41.6",
     "yaspeller": "^6.0.2",
-    "yaspeller-ci": "^1.0.1"
+    "yaspeller-ci": "^1.0.2"
   },
   "eslintConfig": {
     "extends": "@logux/eslint-config",
