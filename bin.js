@@ -32,9 +32,9 @@ async function run () {
 
 run().catch(e => {
   if (e.own) {
-    error(chalk.red(e.message))
+    error(e.message)
   } else {
-    error(chalk.red(e.stack))
+    error(e.stack)
   }
   process.exit(1)
 })
