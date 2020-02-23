@@ -10,14 +10,14 @@ Publish JS project as dual ES modules and CommonJS package to npm.
   like `import async from 'nanoid/async'`.
 * **Cleans npm package** from development configs [before publishing].
 
-You writes CommonJS in your npm library:
+You write CommonJS in your npm library sources:
 
 ```js
 // index.js
 module.exports = lib
 ```
 
-Dual Publish compiles your library and publish complied version to npm:
+`npx dual-publish` compiles your library during publishing to npm:
 
 ```js
 // index.js
@@ -35,7 +35,7 @@ module.exports = lib
 }
 ```
 
-And your lib can be imported natively as ESM or CommonJS:
+Now your library can be imported natively as ESM or CommonJS:
 
 ```js
 // CommonJS
@@ -44,8 +44,7 @@ let lib = require('lib')
 // ESM in webpack, Parcel, and Rollup
 import lib from 'lib'
 
-// ESM in Node.js
-// we need index.js, because Conditional Exports produce warning
+// ESM in Node.js. We need index.js because Conditional Exports produce warning.
 import lib from 'lib/index.js'
 
 // ESM in browser
