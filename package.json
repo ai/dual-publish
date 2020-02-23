@@ -94,7 +94,8 @@
       "dirs",
       "ESM",
       "dir",
-      "NanoEvents"
+      "NanoEvents",
+      "as ESM or"
     ]
   }
 }
