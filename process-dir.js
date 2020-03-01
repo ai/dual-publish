@@ -44,6 +44,59 @@ function replaceRequire (source, exports, named, nameless) {
     .join('\n')
 }
 
+async function replaceToESM (dir, file, source) {
+  let esm = replaceRequire(
+    source,
+    'export default ',
+    named => {
+      let name = named.match(/(let|const|var)\s+(\S+)\s+=/)[2]
+      let path = getPath(file, named, 'js')
+      return `import ${ name } from ${ path }`
+    },
+    nameless => {
+      let path = getPath(file, nameless, 'js')
+      return `import ${ path }`
+    }
+  )
+
+  let index = esm.search(/(\W|^)require\(/)
+  if (index !== -1) {
+    let { line, col } = lineColumn(esm).fromIndex(index)
+    throw error(`Unsupported require() at ${ file }:${ line }:${ col }`)
+  }
+
+  await writeFile(join(dir, file), esm)
+}
+
+async function replaceToCJS (dir, file, source) {
+  let cjs = replaceRequire(
+    source,
+    '$&',
+    named => {
+      let [, prefix, name] = named.match(/(let\s+|const\s+|var\s+)(\S+)\s+=/)
+      let path = getPath(file, named, 'cjs')
+      return `${ prefix }${ name } = require(${ path })`
+    },
+    nameless => {
+      let path = getPath(file, nameless, 'cjs')
+      return `require(${ path })`
+    }
+  )
+  await writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs)
+}
+
+async function replacePackage (dir, file) {
+  let packageJson = join(dir, dirname(file), 'package.json')
+  let packageData = { }
+  if (fs.existsSync(packageJson)) {
+    packageData = JSON.parse(await readFile(packageJson))
+  }
+  packageData.type = 'module'
+  packageData.main = 'index.cjs'
+  packageData.module = 'index.js'
+  await writeFile(packageJson, JSON.stringify(packageData, null, 2))
+}
+
 module.exports = async function (dir) {
   let npmignorePath = join(dir, '.npmignore')
   let ignore = []
@@ -57,60 +110,22 @@ module.exports = async function (dir) {
   let files = await globby('**/*.js', { ignore, cwd: dir })
 
   for (let file of files) {
-    if (!file.endsWith(sep + 'index.js') && file !== 'index.js') {
+    if (!/(^|\/|\\)index(\.browser|\.rn)?\.js/.test(file)) {
       let fixed = file.replace(/\.js$/, sep + 'index.js')
       throw error(`Rename ${ file } to ${ fixed }`)
     }
   }
 
   await Promise.all(files.map(async file => {
-    let base = await readFile(join(dir, file))
-    let cjs = replaceRequire(
-      base,
-      '$&',
-      named => {
-        let [, prefix, name] = named.match(/(let\s+|const\s+|var\s+)(\S+)\s+=/)
-        let path = getPath(file, named, 'cjs')
-        return `${ prefix }${ name } = require(${ path })`
-      },
-      nameless => {
-        let path = getPath(file, nameless, 'cjs')
-        return `require(${ path })`
-      }
-    )
-    let esm = replaceRequire(
-      base,
-      'export default ',
-      named => {
-        let name = named.match(/(let|const|var)\s+(\S+)\s+=/)[2]
-        let path = getPath(file, named, 'js')
-        return `import ${ name } from ${ path }`
-      },
-      nameless => {
-        let path = getPath(file, nameless, 'js')
-        return `import ${ path }`
-      }
-    )
-
-    let index = esm.search(/(\W|^)require\(/)
-    if (index !== -1) {
-      let { line, col } = lineColumn(esm).fromIndex(index)
-      throw error(`Unsupported require() at ${ file }:${ line }:${ col }`)
+    let source = await readFile(join(dir, file))
+    if (file.endsWith('index.browser.js')) {
+      await replaceToESM(dir, file, source)
+    } else {
+      await Promise.all([
+        replaceToCJS(dir, file, source),
+        replaceToESM(dir, file, source),
+        replacePackage(dir, file)
+      ])
     }
-
-    await Promise.all([
-      writeFile(join(dir, file), esm),
-      writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs)
-    ])
-
-    let packageJson = join(dir, dirname(file), 'package.json')
-    let packageData = { }
-    if (fs.existsSync(packageJson)) {
-      packageData = JSON.parse(await readFile(packageJson))
-    }
-    packageData.type = 'module'
-    packageData.main = 'index.cjs'
-    packageData.module = 'index.js'
-    await writeFile(packageJson, JSON.stringify(packageData, null, 2))
   }))
 }

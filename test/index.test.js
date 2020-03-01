@@ -96,6 +96,7 @@ it('works with webpack', async () => {
   let bundle = buffer.toString()
   expect(bundle).not.toContain('cjs ')
   expect(bundle).toContain('esm ')
+  expect(bundle).toContain('esm browser c')
 })
 
 it('throws on non-index file', async () => {
