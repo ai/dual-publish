@@ -100,9 +100,10 @@ it('works with webpack', async () => {
 })
 
 it('throws on non-index file', async () => {
+  let [lib] = await copyDirs('non-index-error')
   let err
   try {
-    await processDir(join(__dirname, 'fixtures', 'non-index-error'))
+    await processDir(lib)
   } catch (e) {
     err = e
   }
@@ -110,9 +111,10 @@ it('throws on non-index file', async () => {
 })
 
 it('throws on index require without .js', async () => {
+  let [lib] = await copyDirs('non-js-index-error')
   let err
   try {
-    await processDir(join(__dirname, 'fixtures', 'non-js-index-error'))
+    await processDir(lib)
   } catch (e) {
     err = e
   }
@@ -122,9 +124,10 @@ it('throws on index require without .js', async () => {
 })
 
 it('throws on un-processed require', async () => {
+  let [lib] = await copyDirs('other-error')
   let err
   try {
-    await processDir(join(__dirname, 'fixtures', 'other-error'))
+    await processDir(lib)
   } catch (e) {
     err = e
   }
