@@ -41,9 +41,7 @@ async function replaceConsole (dir) {
 function removeEsmWarning (stderr) {
   return stderr
     .split('\n')
-    .filter(i => !i.includes(
-      'ExperimentalWarning: The ESM module loader is experimental'
-    ))
+    .filter(i => !i.includes('ExperimentalWarning'))
     .join('\n')
 }
 
