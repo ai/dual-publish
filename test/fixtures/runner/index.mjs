@@ -1,1 +1,3 @@
-import 'lib/index.js'
+import lib from 'lib/index.js'
+
+lib()

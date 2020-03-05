@@ -1,1 +1,3 @@
-require('lib')
+let lib = require('lib')
+
+lib()
