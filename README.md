@@ -14,24 +14,28 @@ You write CommonJS in your npm library sources:
 
 ```js
 // index.js
-module.exports = lib
+module.exports = { lib }
 ```
 
 `npx dual-publish` compiles your library during publishing to npm:
 
 ```js
 // index.js
-export default lib
+export { lib }
 
 // index.cjs
-module.exports = lib
+module.exports = { lib }
 
 // package.json
 {
   …
   "type": "module",
   "module": "index.js",
-  "main": "index.cjs"
+  "main": "index.cjs",
+  "exports": {
+    "require": "./index.cjs",
+    "import": "./index.js"
+  }
 }
 ```
 
@@ -39,16 +43,13 @@ Now your library can be imported natively as ESM or CommonJS:
 
 ```js
 // CommonJS
-let lib = require('lib')
+let { lib } = require('lib')
 
-// ESM in webpack, Parcel, and Rollup
-import lib from 'lib'
-
-// ESM in Node.js. We need index.js because Conditional Exports produce warning.
-import lib from 'lib/index.js'
+// ESM in Node.js, webpack, Parcel, and Rollup
+import { lib } from 'lib'
 
 // ESM in browser
-import lib from 'https://cdn.jsdelivr.net/npm/lib/index.js'
+import { lib } from 'https://cdn.jsdelivr.net/npm/lib/index.js'
 ```
 
 [before publishing]: https://github.com/shashkovdanil/clean-publish/
