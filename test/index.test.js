@@ -1,7 +1,7 @@
 let { remove, copy, readFile, writeFile } = require('fs-extra')
+let { join, dirname } = require('path')
 let { promisify } = require('util')
 let { tmpdir } = require('os')
-let { join } = require('path')
 let webpack = require('webpack')
 let nanoid = require('nanoid/non-secure')
 let globby = require('globby')
@@ -47,6 +47,23 @@ function removeEsmWarning (stderr) {
     .join('\n')
 }
 
+function buildWithWebpack (path) {
+  return new Promise((resolve, reject) => {
+    webpack({
+      entry: join(path),
+      output: {
+        path: dirname(path)
+      }
+    }, err => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
 it('compiles for Node.js', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
@@ -71,32 +88,30 @@ it('reads npmignore', async () => {
   expect(files).not.toContain('e/index.cjs')
 })
 
-it('works with webpack', async () => {
+it('works with modules in webpack', async () => {
   let [lib, client] = await copyDirs('lib', 'client')
   await processDir(lib)
   await replaceConsole(lib)
   await exec(`yarn add lib@${ lib }`, { cwd: client })
 
-  await new Promise((resolve, reject) => {
-    webpack({
-      entry: join(client, 'index.js'),
-      output: {
-        path: client
-      }
-    }, err => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve()
-      }
-    })
-  })
+  await buildWithWebpack(join(client, 'index.js'))
 
-  let buffer = await readFile(join(client, 'main.js'))
-  let bundle = buffer.toString()
-  expect(bundle).not.toContain('cjs ')
-  expect(bundle).toContain('esm ')
-  expect(bundle).toContain('esm browser c')
+  let { stdout, stderr } = await exec('node ' + join(client, 'main.js'))
+  expect(stderr).toEqual('')
+  expect(stdout).toEqual('esm d\nesm a\nesm b\nesm browser c\nesm lib\n')
+})
+
+it('works with require in webpack', async () => {
+  let [lib, client] = await copyDirs('lib', 'client')
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${ lib }`, { cwd: client })
+
+  await buildWithWebpack(join(client, 'cjs.js'))
+
+  let { stdout, stderr } = await exec('node ' + join(client, 'main.js'))
+  expect(stderr).toEqual('')
+  expect(stdout).toEqual('esm d\nesm a\nesm b\nesm browser c\nesm lib\n')
 })
 
 it('throws on non-index file', async () => {
