@@ -98,6 +98,12 @@ async function replacePackage (dir, file) {
   packageData.type = 'module'
   packageData.main = 'index.cjs'
   packageData.module = 'index.js'
+  packageData.exports = {
+    '.': {
+      require: './index.cjs',
+      import: './index.js'
+    }
+  }
   await writeFile(packageJson, JSON.stringify(packageData, null, 2))
 }
 
