@@ -148,7 +148,18 @@ it('throws on index require without .js', async () => {
 })
 
 it('throws on un-processed require', async () => {
-  let [lib] = await copyDirs('other-error')
+  let [lib] = await copyDirs('require-error')
+  let err
+  try {
+    await processDir(lib)
+  } catch (e) {
+    err = e
+  }
+  expect(err.message).toEqual('Unsupported require() at index.js:1:18')
+})
+
+it('throws on un-processed exports', async () => {
+  let [lib] = await copyDirs('export-error')
   let err
   try {
     await processDir(lib)
@@ -156,6 +167,6 @@ it('throws on un-processed require', async () => {
     err = e
   }
   expect(err.message).toEqual(
-    'Unsupported require() at index.js:1:18'
+    'Replace module.exports.x to module.exports = { x } at index.js:1:1'
   )
 })

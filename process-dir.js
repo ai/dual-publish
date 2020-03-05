@@ -63,10 +63,19 @@ async function replaceToESM (dir, file, source) {
     }
   )
 
-  let index = esm.search(/(\W|^)require\(/)
-  if (index !== -1) {
-    let { line, col } = lineColumn(esm).fromIndex(index)
+  let requireIndex = esm.search(/(\W|^)require\(/)
+  if (requireIndex !== -1) {
+    let { line, col } = lineColumn(esm).fromIndex(requireIndex)
     throw error(`Unsupported require() at ${ file }:${ line }:${ col }`)
+  }
+
+  let exportIndex = esm.search(/(\W|^)(module\.)?exports\./)
+  if (exportIndex !== -1) {
+    let { line, col } = lineColumn(esm).fromIndex(exportIndex)
+    throw error(
+      'Replace module.exports.x to module.exports = { x } ' +
+      `at ${ file }:${ line }:${ col }`
+    )
   }
 
   await writeFile(join(dir, file), esm)
