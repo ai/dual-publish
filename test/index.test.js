@@ -56,6 +56,10 @@ async function buildWithWebpack (path) {
   return join(dirname(path), 'main.js')
 }
 
+function trimCode (stderr) {
+  return stderr.replace(/\(node:\d+\) /g, '')
+}
+
 it('compiles for Node.js', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
@@ -66,20 +70,21 @@ it('compiles for Node.js', async () => {
   expect(cjs.stderr).toEqual('')
   expect(cjs.stdout).toEqual('cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\n')
 
-  if (process.version.startsWith('v10.')) return
-  let esm = await exec(esmNode + join(runner, 'index.mjs'))
-  if (process.version.startsWith('v12.')) {
-    expect(esm.stderr).toEqual(
-      '(node:8846) ExperimentalWarning: ' +
-      'The ESM module loader is experimental.\n'
-    )
-  } else {
-    expect(esm.stderr).toEqual(
-      '(node:8846) ExperimentalWarning: ' +
-      'The ESM module loader is experimental.\n'
-    )
+  if (!process.version.startsWith('v10.')) {
+    let esm = await exec(esmNode + join(runner, 'index.mjs'))
+    if (process.version.startsWith('v12.')) {
+      expect(trimCode(esm.stderr)).toEqual(
+        'ExperimentalWarning: The ESM module loader is experimental.\n' +
+        'ExperimentalWarning: Conditional exports is an experimental feature.' +
+        ' This feature could change at any time\n'
+      )
+    } else {
+      expect(trimCode(esm.stderr)).toEqual(
+        'ExperimentalWarning: The ESM module loader is experimental.\n'
+      )
+    }
+    expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
   }
-  expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
 })
 
 it('reads npmignore', async () => {
