@@ -70,16 +70,23 @@ import { lib } from 'https://cdn.jsdelivr.net/npm/lib/index.js'
 ## Usage
 
 1. Take a normal CommonJS project with `require()` and `module.exports =`.
-2. Move all files into separated dirs. Like rename `lib.js` to `lib/index.js`.
+2. Because of [bug in webpack] we recommend to use only named exports:
+
+   ```js
+   const NAME = 'a'
+   function change {
+     …
+   }
+
+   module.exports = { NAME, change }
+   ```
+3. Move all files into separated dirs. Rename `lib.js` to `lib/index.js`.
    Old `require('./lib')` will work.
-3. Add `dual-publish` to the project:
+4. Add `dual-publish` to the project:
 
    ```sh
    npm i --save-dev dual-publish
    ```
-4. Add instruction for Node.js ESM users to manually add `index.mjs` in imports.
-   You can copy them from
-   [NanoEvents](https://github.com/ai/nanoevents/#es-modules).
 5. Test the result by calling `npx dual-publish --without-publish`.
    It will create a folder in your project with converted files.
    Review them manually.
