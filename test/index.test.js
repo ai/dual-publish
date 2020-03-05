@@ -87,6 +87,21 @@ it('compiles for Node.js', async () => {
   }
 })
 
+it('allows to use sub-files for Node.js', async () => {
+  let [lib, runner] = await copyDirs('lib', 'runner')
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${ lib }`, { cwd: runner })
+
+  let cjs = await exec('node ' + join(runner, 'subfile.cjs'))
+  expect(cjs.stdout).toEqual('cjs a\n')
+
+  if (!process.version.startsWith('v10.')) {
+    let esm = await exec(esmNode + join(runner, 'subfile.mjs'))
+    expect(esm.stdout).toEqual('esm a\n')
+  }
+})
+
 it('reads npmignore', async () => {
   let [lib] = await copyDirs('lib')
   await processDir(lib)

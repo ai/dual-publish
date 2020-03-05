@@ -98,7 +98,7 @@ async function replaceToCJS (dir, file, source) {
   await writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs)
 }
 
-async function replacePackage (dir, file) {
+async function replacePackage (dir, file, files) {
   let packageJson = join(dir, dirname(file), 'package.json')
   let packageData = { }
   if (fs.existsSync(packageJson)) {
@@ -107,10 +107,15 @@ async function replacePackage (dir, file) {
   packageData.type = 'module'
   packageData.main = 'index.cjs'
   packageData.module = 'index.js'
-  packageData.exports = {
-    '.': {
-      require: './index.cjs',
-      import: './index.js'
+  if (file === 'index.js') {
+    packageData.exports = { }
+    for (let i of files) {
+      let path = '.'
+      if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
+      packageData.exports[path] = {
+        require: path + '/index.cjs',
+        import: path + '/index.js'
+      }
     }
   }
   await writeFile(packageJson, JSON.stringify(packageData, null, 2))
@@ -143,7 +148,7 @@ module.exports = async function (dir) {
       await Promise.all([
         replaceToCJS(dir, file, source),
         replaceToESM(dir, file, source),
-        replacePackage(dir, file)
+        replacePackage(dir, file, files)
       ])
     }
   }))
