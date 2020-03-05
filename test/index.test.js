@@ -71,9 +71,9 @@ it('compiles for Node.js', async () => {
   await replaceConsole(lib)
   await exec(`yarn add lib@${ lib }`, { cwd: runner })
 
-  // let cjs = await exec('node ' + join(runner, 'index.cjs'))
-  // expect(cjs.stderr).toEqual('')
-  // expect(cjs.stdout).toEqual('cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\n')
+  let cjs = await exec('node ' + join(runner, 'index.cjs'))
+  expect(cjs.stderr).toEqual('')
+  expect(cjs.stdout).toEqual('cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\n')
 
   if (!process.version.startsWith('v10.')) {
     let esm = await exec(esmNode + join(runner, 'index.mjs'))

@@ -7,7 +7,7 @@ let fs = require('fs')
 let writeFile = promisify(fs.writeFile)
 let readFile = promisify(fs.readFile)
 
-const NAME = /(let|const|var)\s+(\S+|{[^}]+})\s*=/
+const NAME = /(let\s+|const\s+|var\s+)(\S+|{[^}]+})\s*=/
 const REQUIRES =
   /^(let|const|var)\s+(\S+|{\s*\w+(\s*,\w\s*)*\s*})\s*=\s*require\(([^)]+)\)/g
 
