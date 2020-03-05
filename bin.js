@@ -8,7 +8,7 @@ let processDir = require('./process-dir')
 let showHelp = require('./show-help')
 
 function error (message) {
-  process.stderr.write(chalk.red(message) + '\n')
+  process.stderr.write(chalk.bgRed(' ERROR ') + ' ' + message + '\n')
 }
 
 function print (...lines) {
