@@ -7,6 +7,10 @@ let fs = require('fs')
 let writeFile = promisify(fs.writeFile)
 let readFile = promisify(fs.readFile)
 
+const NAME = /(let|const|var)\s+(\S+|{[^}]+})\s*=/
+const REQUIRES =
+  /^(let|const|var)\s+(\S+|{\s*\w+(\s*,\w\s*)*\s*})\s*=\s*require\(([^)]+)\)/g
+
 function error (msg) {
   let err = new Error(msg)
   err.own = true
@@ -38,7 +42,7 @@ function replaceRequire (source, exports, named, nameless) {
     .split('\n')
     .map(line => line
       .replace(/^module.exports\s*=\s*/, exports)
-      .replace(/^(let|const|var)\s+(\S+)\s+=\s+require\(([^)]+)\)/g, named)
+      .replace(REQUIRES, named)
       .replace(/^require\(([^)]+)\)/g, nameless)
     )
     .join('\n')
@@ -47,9 +51,9 @@ function replaceRequire (source, exports, named, nameless) {
 async function replaceToESM (dir, file, source) {
   let esm = replaceRequire(
     source,
-    'export default ',
+    'export ',
     named => {
-      let name = named.match(/(let|const|var)\s+(\S+)\s+=/)[2]
+      let name = named.match(NAME)[2]
       let path = getPath(file, named, 'js')
       return `import ${ name } from ${ path }`
     },
@@ -73,7 +77,7 @@ async function replaceToCJS (dir, file, source) {
     source,
     '$&',
     named => {
-      let [, prefix, name] = named.match(/(let\s+|const\s+|var\s+)(\S+)\s+=/)
+      let [, prefix, name] = named.match(NAME)
       let path = getPath(file, named, 'cjs')
       return `${ prefix }${ name } = require(${ path })`
     },

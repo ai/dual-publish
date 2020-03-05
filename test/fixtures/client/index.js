@@ -1,3 +1,3 @@
-import lib from 'lib'
+import { lib } from 'lib'
 
 lib()

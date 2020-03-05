@@ -1,1 +1,1 @@
-let { join } = require('path')
+let { j: join } = require('path')

@@ -51,6 +51,7 @@
   "eslintConfig": {
     "extends": "@logux/eslint-config",
     "rules": {
+      "security/detect-unsafe-regex": "off",
       "global-require": "off"
     }
   },
