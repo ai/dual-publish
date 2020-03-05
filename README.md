@@ -60,15 +60,11 @@ import lib from 'https://cdn.jsdelivr.net/npm/lib/index.js'
 
 ## Limits
 
-* Node.js ESM users should manually add `index.mjs` to import, because
-  [Conditional Exports] print warning.
-* Only default export is supported right now, since CommonJS doesn’t support
-  combining default and named exports.
+* We recommend to avoid default export because of [bug in webpack].
 * Every JS file should be in own dir. `lib/index.js` instead of `lib.js`.
   We need it to put `package.json` with `module`.
 
-[Conditional Exports]: https://nodejs.org/api/esm.html#esm_conditional_exports
-
+[bug in webpack]: https://github.com/webpack/webpack/issues/6584
 
 ## Usage
 
