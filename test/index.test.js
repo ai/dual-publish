@@ -38,13 +38,6 @@ async function replaceConsole (dir) {
   }))
 }
 
-function removeEsmWarning (stderr) {
-  return stderr
-    .split('\n')
-    .filter(i => !i.includes('ExperimentalWarning'))
-    .join('\n')
-}
-
 async function buildWithWebpack (path) {
   await new Promise((resolve, reject) => {
     webpack({
@@ -73,11 +66,20 @@ it('compiles for Node.js', async () => {
   expect(cjs.stderr).toEqual('')
   expect(cjs.stdout).toEqual('cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\n')
 
-  if (!process.version.startsWith('v10.')) {
-    let esm = await exec(esmNode + join(runner, 'index.mjs'))
-    expect(removeEsmWarning(esm.stderr)).toEqual('')
-    expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
+  if (process.version.startsWith('v10.')) return
+  let esm = await exec(esmNode + join(runner, 'index.mjs'))
+  if (process.version.startsWith('v12.')) {
+    expect(esm.stderr).toEqual(
+      '(node:8846) ExperimentalWarning: ' +
+      'The ESM module loader is experimental.\n'
+    )
+  } else {
+    expect(esm.stderr).toEqual(
+      '(node:8846) ExperimentalWarning: ' +
+      'The ESM module loader is experimental.\n'
+    )
   }
+  expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
 })
 
 it('reads npmignore', async () => {
