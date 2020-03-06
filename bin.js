@@ -1,40 +1,22 @@
 #!/usr/bin/env node
 
 let { join } = require('path')
-let chalk = require('chalk')
 
 let showVersion = require('./show-version')
-let processDir = require('./process-dir')
 let showHelp = require('./show-help')
+let cli = require('./cli')
 
-function error (message) {
-  process.stderr.write(chalk.bgRed(' ERROR ') + ' ' + message + '\n')
-}
-
-function print (...lines) {
-  process.stdout.write(lines.join('\n') + '\n')
-}
-
-let args = process.argv.slice(2)
-
-async function run () {
+cli(async (args, print) => {
   if (args.some(i => i === '--help')) {
     showHelp(print)
   } else if (args.some(i => i === '--version')) {
     showVersion(print)
-  } else if (args.length === 1 && !args[0].startsWith('--')) {
-    await processDir(join(process.cwd(), args[0]))
   } else {
-    process.argv.push('--before-script', process.argv[1])
+    let script = join(__dirname, 'process.js')
+    if (args.includes('--without-publish')) {
+      script = join(__dirname, 'process-and-rename.js')
+    }
+    process.argv.push('--before-script', script)
     require('clean-publish/clean-publish')
   }
-}
-
-run().catch(e => {
-  if (e.own) {
-    error(e.message)
-  } else {
-    error(e.stack)
-  }
-  process.exit(1)
 })
