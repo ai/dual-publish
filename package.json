@@ -20,7 +20,8 @@
     "chalk": "^3.0.0",
     "clean-publish": "^1.1.5",
     "globby": "^11.0.0",
-    "line-column": "^1.0.2"
+    "line-column": "^1.0.2",
+    "rimraf": "^3.0.2"
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",

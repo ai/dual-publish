@@ -2,6 +2,7 @@ let { dirname, join, sep } = require('path')
 let { promisify } = require('util')
 let lineColumn = require('line-column')
 let globby = require('globby')
+let rimraf = promisify(require('rimraf'))
 let fs = require('fs')
 
 let writeFile = promisify(fs.writeFile)
@@ -121,7 +122,7 @@ async function replacePackage (dir, file, files) {
   await writeFile(packageJson, JSON.stringify(packageData, null, 2))
 }
 
-module.exports = async function (dir) {
+async function process (dir) {
   let npmignorePath = join(dir, '.npmignore')
   let ignore = []
   if (fs.existsSync(npmignorePath)) {
@@ -152,4 +153,13 @@ module.exports = async function (dir) {
       ])
     }
   }))
+}
+
+module.exports = async function processDir (dir) {
+  try {
+    await process(dir)
+  } catch (e) {
+    await rimraf(dir)
+    throw e
+  }
 }
