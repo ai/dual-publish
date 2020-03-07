@@ -87,6 +87,21 @@ it('compiles for Node.js', async () => {
   }
 })
 
+it('compiles default export for Node.js', async () => {
+  let [lib, runner] = await copyDirs('default-lib', 'default-runner')
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${ lib }`, { cwd: runner })
+
+  let cjs = await exec('node ' + join(runner, 'index.cjs'))
+  expect(cjs.stdout).toEqual('cjs a\ncjs lib\n')
+
+  if (!process.version.startsWith('v10.')) {
+    let esm = await exec(esmNode + join(runner, 'index.mjs'))
+    expect(esm.stdout).toEqual('esm a\nesm lib\n')
+  }
+})
+
 it('allows to use sub-files for Node.js', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)

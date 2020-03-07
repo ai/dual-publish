@@ -47,8 +47,8 @@ function replaceRequire (source, exported, named, nameless) {
   return source
     .toString()
     .replace(
-      /(^|\n)module.exports\s*=\s*/g,
-      str => exported(str, extractPrefix(str))
+      /(^|\n)module.exports\s*=\s*\S/g,
+      str => exported(str, extractPrefix(str), str.slice(-1))
     )
     .replace(
       /(^|\n)(let|const|var)\s+({[^}]+}|\S+)\s*=\s*require\([^)]+\)/g,
@@ -66,7 +66,13 @@ function replaceRequire (source, exported, named, nameless) {
 async function replaceToESM (dir, file, source) {
   let esm = replaceRequire(
     source,
-    (exported, prefix) => prefix + 'export ',
+    (exported, prefix, postfix) => {
+      if (postfix === '{') {
+        return `${ prefix }export ${ postfix }`
+      } else {
+        return `${ prefix }export default ${ postfix }`
+      }
+    },
     (named, prefix, varType, name) => {
       let path = getPath(file, named, 'js')
       name = name.replace(/\s*:\s*/, ' as ')
