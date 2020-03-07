@@ -1,6 +1,12 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5
+* Add default export support.
+* Add multiline import support.
+* Add renamed import support.
+* Remove temporary dir on error.
+
 ## 0.4.1
 * Use `dual-publish-tmp/` on `--without-publish`.
 
