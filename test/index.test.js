@@ -170,7 +170,7 @@ it('throws on un-processed require', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toEqual('Unsupported require() at index.js:1:18')
+  expect(err.message).toEqual('Unsupported require() at index.js:2:2')
 })
 
 it('throws on un-processed exports', async () => {

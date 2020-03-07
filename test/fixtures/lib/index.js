@@ -2,14 +2,16 @@ let { promisify } = require('util')
 let path = require('path')
 
 const { a } = require('./a')
-let { b } = require('./b/index.js')
-var { c } = require('./c/')
+let {
+  b
+} = require('./b/index.js')
+var { c: cname } = require('./c/')
 require('./d')
 
 function lib () {
   a(path.join('a', 'b'))
   b()
-  c()
+  cname()
   console.log('cjs lib')
 }
 

@@ -1,1 +1,3 @@
-let { j: join } = require('path')
+function test () {
+  require('path')
+}
