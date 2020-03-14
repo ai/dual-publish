@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.1
+* Add `*.test.js` and `*.spec.js` files support.
+
 ## 0.5
 * Add default export support.
 * Add multiline import support.
