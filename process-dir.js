@@ -151,6 +151,8 @@ async function process (dir) {
     })
   }
 
+  ignore.push('**/*.test.js', '**/*.spec.js')
+
   let files = await globby('**/*.js', { ignore, cwd: dir })
 
   for (let file of files) {

@@ -61,6 +61,9 @@
   ],
   "jest": {
     "testEnvironment": "node",
+    "modulePathIgnorePatterns": [
+      "test/fixtures/"
+    ],
     "coverageThreshold": {
       "global": {
         "statements": 100
