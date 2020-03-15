@@ -125,10 +125,12 @@ it('reads npmignore', async () => {
 })
 
 it('works with modules in webpack', async () => {
-  let [lib, client] = await copyDirs('lib', 'client')
+  let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
   await processDir(lib)
+  await processDir(clientLib)
   await replaceConsole(lib)
   await exec(`yarn add lib@${ lib }`, { cwd: client })
+  await exec(`yarn add client-lib@${ clientLib }`, { cwd: client })
 
   let bundle = await buildWithWebpack(join(client, 'index.js'))
 
@@ -141,10 +143,12 @@ it('works with modules in webpack', async () => {
 })
 
 it('works with require in webpack', async () => {
-  let [lib, client] = await copyDirs('lib', 'client')
+  let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
   await processDir(lib)
+  await processDir(clientLib)
   await replaceConsole(lib)
   await exec(`yarn add lib@${ lib }`, { cwd: client })
+  await exec(`yarn add client-lib@${ clientLib }`, { cwd: client })
 
   let bundle = await buildWithWebpack(join(client, 'cjs.js'))
 

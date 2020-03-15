@@ -23,16 +23,19 @@ function getPath (file, statement, ext) {
       'Replace `index` in require() to `index.js` at ' + file
     )
   }
-  if (/^["']..?(["']$|\/)/.test(path)) {
+  if (/\.(svg|png|css|sass)["']$/.test(path)) {
+    return path
+  } else if (/^["']..?(["']$|\/)/.test(path)) {
     if (/\/index\.js(["'])$/.test(path)) {
-      path = path.replace(/\/index\.js(["'])$/, `/index.${ ext }$1`)
+      return path.replace(/\/index\.js(["'])$/, `/index.${ ext }$1`)
     } else if (/\/["']$/.test(path)) {
-      path = path.replace(/["']$/, `index.${ ext }$&`)
+      return path.replace(/["']$/, `index.${ ext }$&`)
     } else {
-      path = path.replace(/["']$/, `/index.${ ext }$&`)
+      return path.replace(/["']$/, `/index.${ ext }$&`)
     }
+  } else {
+    return path
   }
-  return path
 }
 
 function extractPrefix (str) {
