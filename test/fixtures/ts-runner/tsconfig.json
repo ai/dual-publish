@@ -1,8 +1,5 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "es2015",
-    "module": "es2015",
     "lib": ["es2015"]
   }
 }
