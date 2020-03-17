@@ -45,6 +45,7 @@
     "jest-ci": "^0.1.1",
     "lint-staged": "^10.0.8",
     "nanoid": "^2.1.11",
+    "typescript": "^3.8.3",
     "webpack": "^4.42.0",
     "yaspeller": "^6.0.3",
     "yaspeller-ci": "^1.0.2"

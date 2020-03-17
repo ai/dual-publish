@@ -102,6 +102,18 @@ it('compiles default export for Node.js', async () => {
   }
 })
 
+it('compiles for TypeScript', async () => {
+  let [lib, runner] = await copyDirs('lib', 'ts-runner')
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${ lib }`, { cwd: runner })
+
+  await exec('npx tsc --build ' + join(runner, 'tsconfig.json'))
+
+  let esm = await exec(esmNode + join(runner, 'index.js'))
+  expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
+})
+
 it('allows to use sub-files for Node.js', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
