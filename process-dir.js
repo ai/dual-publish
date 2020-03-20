@@ -185,7 +185,7 @@ async function process (dir) {
     if (file.endsWith('index.browser.js')) {
       await replaceToESM(dir, file, source)
     } else if (file.endsWith('index.native.js')) {
-      await replaceToESM(dir, file, source)
+      await replaceToCJS(dir, file, source)
     } else {
       await Promise.all([
         replaceToCJS(dir, file, source),
