@@ -134,7 +134,7 @@ async function replacePackage (dir, file, files) {
     packageData.exports = { }
     for (let i of files) {
       let path = '.'
-      if (i.endsWith('.browser.js') || i.endsWith('.rn.js')) continue
+      if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
       if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
       packageData.exports[path] = {
         require: path + '/index.cjs',
@@ -150,7 +150,7 @@ async function replacePackage (dir, file, files) {
         './index.js': './index.browser.js'
       }
     }
-    if (files.includes(file.replace(/\.js$/, '.rn.js'))) {
+    if (files.includes(file.replace(/\.js$/, '.native.js'))) {
       packageData['react-native'] = {
         './index.js': './index.browser.js'
       }
@@ -184,7 +184,7 @@ async function process (dir) {
     let source = await readFile(join(dir, file))
     if (file.endsWith('index.browser.js')) {
       await replaceToESM(dir, file, source)
-    } else if (file.endsWith('index.rn.js')) {
+    } else if (file.endsWith('index.native.js')) {
       await replaceToESM(dir, file, source)
     } else {
       await Promise.all([
