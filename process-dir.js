@@ -144,6 +144,15 @@ async function replacePackage (dir, file, files) {
         packageData.exports[path].browser = path + '/index.browser.js'
       }
     }
+  } else {
+    if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
+      packageData.browser = './index.browser.js'
+    }
+    if (files.includes(file.replace(/\.js$/, '.rn.js'))) {
+      packageData['react-native'] = {
+        './index.js': './index.browser.js'
+      }
+    }
   }
   await writeFile(packageJson, JSON.stringify(packageData, null, 2))
 }
