@@ -1,6 +1,6 @@
 {
   "name": "dual-publish",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Publish project as dual ES modules and CommonJS package",
   "keywords": [
     "esm",
@@ -101,7 +101,8 @@
       "ESM",
       "dir",
       "NanoEvents",
-      "as ESM or"
+      "as ESM or",
+      "subfolders"
     ]
   }
 }
