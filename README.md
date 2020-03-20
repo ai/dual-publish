@@ -87,7 +87,7 @@ import { lib } from 'https://cdn.jsdelivr.net/npm/lib/index.js'
    ```sh
    npm i --save-dev dual-publish
    ```
-5. Test the result by calling `npx dual-publish --without-publish`.
+5. Test the result by calling `npx dual-publish --check`.
    It will create a folder in your project with converted files.
    Review them manually.
 6. Publish your project with `npx dual-publish` instead of `npm publish`.

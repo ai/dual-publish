@@ -13,7 +13,10 @@ cli(async (args, print) => {
     showVersion(print)
   } else {
     let script = join(__dirname, 'process.js')
-    if (args.includes('--without-publish')) {
+    if (args.includes('--check')) {
+      process.argv.push('--without-publish')
+      script = join(__dirname, 'process-and-rename.js')
+    } else if (args.includes('--without-publish')) {
       script = join(__dirname, 'process-and-rename.js')
     }
     process.argv.push('--before-script', script)
