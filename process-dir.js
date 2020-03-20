@@ -174,7 +174,7 @@ async function process (dir) {
   let files = await globby('**/*.js', { ignore, cwd: dir })
 
   for (let file of files) {
-    if (!/(^|\/|\\)index(\.browser|\.rn)?\.js/.test(file)) {
+    if (!/(^|\/|\\)index(\.browser|\.native)?\.js/.test(file)) {
       let fixed = file.replace(/\.js$/, sep + 'index.js')
       throw error(`Rename ${ file } to ${ fixed }`)
     }
