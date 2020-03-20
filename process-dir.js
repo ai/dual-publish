@@ -173,6 +173,8 @@ async function process (dir) {
     let source = await readFile(join(dir, file))
     if (file.endsWith('index.browser.js')) {
       await replaceToESM(dir, file, source)
+    } else if (file.endsWith('index.rn.js')) {
+      await replaceToESM(dir, file, source)
     } else {
       await Promise.all([
         replaceToCJS(dir, file, source),
