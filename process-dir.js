@@ -140,6 +140,9 @@ async function replacePackage (dir, file, files) {
         require: path + '/index.cjs',
         import: path + '/index.js'
       }
+      if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
+        packageData.exports[path].browser = path + '/index.browser.js'
+      }
     }
   }
   await writeFile(packageJson, JSON.stringify(packageData, null, 2))
