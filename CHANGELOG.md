@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.6.1
+* Fix auto-generated `package.browser.js` syntax.
+
 ## 0.6
 * Rename `--without-publish` to `--check`.
 * Fix support of `index.browser.js` in subfolders.
