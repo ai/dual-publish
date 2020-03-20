@@ -134,6 +134,7 @@ async function replacePackage (dir, file, files) {
     packageData.exports = { }
     for (let i of files) {
       let path = '.'
+      if (i.endsWith('.browser.js') || i.endsWith('.rn.js')) continue
       if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
       packageData.exports[path] = {
         require: path + '/index.cjs',
