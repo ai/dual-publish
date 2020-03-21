@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.8
+* Ignore files with ESM export if they have no `index.js` name.
+
 ## 0.7
 * React Native replacements must have `index.native.js` name.
 * Add `index.cjs.js` files as temporary solution for React Native.
