@@ -105,6 +105,22 @@ async function replaceToESM (dir, file, source) {
   await writeFile(join(dir, file), esm)
 }
 
+async function replaceToOld (dir, file, source) {
+  let cjs = replaceRequire(
+    source,
+    exported => exported,
+    (named, prefix, varType, name) => {
+      let path = getPath(file, named, 'old.js')
+      return `${ prefix }${ varType }${ name } = require(${ path })`
+    },
+    (nameless, prefix) => {
+      let path = getPath(file, nameless, 'old.js')
+      return `${ prefix }require(${ path })`
+    }
+  )
+  await writeFile(join(dir, file.replace(/\.js$/, '.old.js')), cjs)
+}
+
 async function replaceToCJS (dir, file, source) {
   let cjs = replaceRequire(
     source,
@@ -122,41 +138,41 @@ async function replaceToCJS (dir, file, source) {
 }
 
 async function replacePackage (dir, file, files) {
-  let packageJson = join(dir, dirname(file), 'package.json')
-  let packageData = { }
-  if (fs.existsSync(packageJson)) {
-    packageData = JSON.parse(await readFile(packageJson))
+  let pkgFile = join(dir, dirname(file), 'package.json')
+  let pkg = { }
+  if (fs.existsSync(pkgFile)) {
+    pkg = JSON.parse(await readFile(pkgFile))
   }
-  packageData.type = 'module'
-  packageData.main = 'index.cjs'
-  packageData.module = 'index.js'
+  pkg.type = 'module'
+  pkg.main = 'index.old.js'
+  pkg.module = 'index.js'
   if (file === 'index.js') {
-    packageData.exports = { }
+    pkg.exports = { }
     for (let i of files) {
       let path = '.'
       if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
       if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
-      packageData.exports[path] = {
+      pkg.exports[path] = {
         require: path + '/index.cjs',
         import: path + '/index.js'
       }
       if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
-        packageData.exports[path].browser = path + '/index.browser.js'
+        pkg.exports[path].browser = path + '/index.browser.js'
       }
     }
   } else {
     if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
-      packageData.browser = {
-        './index.js': './index.browser.js'
+      pkg.browser = {
+        'index.js': 'index.browser.js'
       }
     }
     if (files.includes(file.replace(/\.js$/, '.native.js'))) {
-      packageData['react-native'] = {
-        './index.js': './index.browser.js'
+      pkg['react-native'] = {
+        'index.js': 'index.native.js'
       }
     }
   }
-  await writeFile(packageJson, JSON.stringify(packageData, null, 2))
+  await writeFile(pkgFile, JSON.stringify(pkg, null, 2))
 }
 
 async function process (dir) {
@@ -184,14 +200,14 @@ async function process (dir) {
     let source = await readFile(join(dir, file))
     if (file.endsWith('index.browser.js')) {
       await replaceToESM(dir, file, source)
-    } else if (file.endsWith('index.native.js')) {
-      await replaceToCJS(dir, file, source)
-    } else {
-      await Promise.all([
+    } else if (!file.endsWith('index.native.js')) {
+      let tasks = [
+        replaceToOld(dir, file, source),
         replaceToCJS(dir, file, source),
         replaceToESM(dir, file, source),
         replacePackage(dir, file, files)
-      ])
+      ]
+      await Promise.all(tasks)
     }
   }))
 }

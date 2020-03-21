@@ -150,6 +150,19 @@ it('works with modules in webpack', async () => {
   expect(buffer.toString()).not.toContain('shaked-export')
 })
 
+it('compiles for React Native', async () => {
+  let [lib, runner] = await copyDirs('lib', 'rn-runner')
+  await processDir(lib)
+  await exec(`yarn add lib@${ lib }`, { cwd: runner })
+  let out
+  try {
+    await exec('npx metro build -O ./out ./index.js', { cwd: runner })
+  } catch (e) {
+    out = e.message
+  }
+  expect(out).toContain('ReferenceError: SHA-1 for file')
+})
+
 it('works with require in webpack', async () => {
   let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
   await processDir(lib)

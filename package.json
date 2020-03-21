@@ -44,6 +44,8 @@
     "jest": "^25.1.0",
     "jest-ci": "^0.1.1",
     "lint-staged": "^10.0.8",
+    "metro": "^0.59.0",
+    "metro-core": "^0.59.0",
     "nanoid": "^2.1.11",
     "typescript": "^3.8.3",
     "webpack": "^4.42.0",
