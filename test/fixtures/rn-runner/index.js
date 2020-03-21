@@ -1,3 +1,3 @@
 let { a } = require('lib/a')
 
-lib()
+a()

@@ -152,6 +152,7 @@ async function replacePackage (dir, file, files) {
       let path = '.'
       if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
       if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
+      pkg.exports[path + '/package.json'] = path + '/package.json'
       pkg.exports[path] = {
         require: path + '/index.cjs',
         import: path + '/index.js'
