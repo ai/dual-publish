@@ -187,15 +187,23 @@ async function process (dir) {
 
   let files = await globby('**/*.js', { ignore, cwd: dir })
 
-  for (let file of files) {
-    if (!/(^|\/|\\)index(\.browser|\.native)?\.js/.test(file)) {
+  let sources = await Promise.all(files.map(async file => {
+    let source = await readFile(join(dir, file))
+    return [file, source]
+  }))
+
+  sources = sources.filter(async ([file, source]) => {
+    if (/(^|\/|\\)index(\.browser|\.native)?\.js/.test(file)) {
+      return true
+    } else if (/(^|\n)export /.test(source)) {
+      return false
+    } else {
       let fixed = file.replace(/\.js$/, sep + 'index.js')
       throw error(`Rename ${ file } to ${ fixed }`)
     }
-  }
+  })
 
-  await Promise.all(files.map(async file => {
-    let source = await readFile(join(dir, file))
+  await Promise.all(sources.map(async ([file, source]) => {
     if (file.endsWith('index.browser.js')) {
       await replaceToESM(dir, file, source)
     } else if (!file.endsWith('index.native.js')) {
