@@ -162,7 +162,7 @@ async function replacePackage (dir, file, files) {
     }
   } else if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
     pkg.browser = {
-      'index.js': 'index.browser.js'
+      './index.js': './index.browser.js'
     }
   }
   if (files.includes(file.replace(/\.js$/, '.native.js'))) {
