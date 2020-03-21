@@ -185,14 +185,14 @@ async function process (dir) {
 
   ignore.push('**/*.test.js', '**/*.spec.js')
 
-  let files = await globby('**/*.js', { ignore, cwd: dir })
+  let all = await globby('**/*.js', { ignore, cwd: dir })
 
-  let sources = await Promise.all(files.map(async file => {
+  let sources = await Promise.all(all.map(async file => {
     let source = await readFile(join(dir, file))
     return [file, source]
   }))
 
-  sources = sources.filter(async ([file, source]) => {
+  sources = sources.filter(([file, source]) => {
     if (/(^|\/|\\)index(\.browser|\.native)?\.js/.test(file)) {
       return true
     } else if (/(^|\n)export /.test(source)) {
@@ -202,6 +202,7 @@ async function process (dir) {
       throw error(`Rename ${ file } to ${ fixed }`)
     }
   })
+  let files = sources.map(([file]) => file)
 
   await Promise.all(sources.map(async ([file, source]) => {
     if (file.endsWith('index.browser.js')) {
