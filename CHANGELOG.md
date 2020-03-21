@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.8.3
+* Fix React Native `package.json` warnings.
+
 ## 0.8.2
 * Fix `package.browser` entry.
 
