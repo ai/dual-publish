@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.8.1
+* Clean `package.json` from unnecessary exports.
+
 ## 0.8
 * Ignore files with ESM export if they have no `index.js` name.
 
