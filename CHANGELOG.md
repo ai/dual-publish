@@ -1,6 +1,10 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.7
+* React Native replacements must have `index.native.js` name.
+* Add `index.cjs.js` files as temporary solution for React Native.
+
 ## 0.6.1
 * Fix auto-generated `package.browser.js` syntax.
 
