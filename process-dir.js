@@ -110,15 +110,15 @@ async function replaceToOld (dir, file, source) {
     source,
     exported => exported,
     (named, prefix, varType, name) => {
-      let path = getPath(file, named, 'old.js')
+      let path = getPath(file, named, 'cjs.js')
       return `${ prefix }${ varType }${ name } = require(${ path })`
     },
     (nameless, prefix) => {
-      let path = getPath(file, nameless, 'old.js')
+      let path = getPath(file, nameless, 'cjs.js')
       return `${ prefix }require(${ path })`
     }
   )
-  await writeFile(join(dir, file.replace(/\.js$/, '.old.js')), cjs)
+  await writeFile(join(dir, file.replace(/\.js$/, '.cjs.js')), cjs)
 }
 
 async function replaceToCJS (dir, file, source) {
@@ -144,7 +144,7 @@ async function replacePackage (dir, file, files) {
     pkg = JSON.parse(await readFile(pkgFile))
   }
   pkg.type = 'module'
-  pkg.main = 'index.old.js'
+  pkg.main = 'index.cjs'
   pkg.module = 'index.js'
   if (file === 'index.js') {
     pkg.exports = { }
@@ -160,17 +160,15 @@ async function replacePackage (dir, file, files) {
         pkg.exports[path].browser = path + '/index.browser.js'
       }
     }
+  } else if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
+    pkg.browser = {
+      'index.js': 'index.browser.js'
+    }
+  }
+  if (files.includes(file.replace(/\.js$/, '.native.js'))) {
+    pkg['react-native'] = 'index.native.js'
   } else {
-    if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
-      pkg.browser = {
-        'index.js': 'index.browser.js'
-      }
-    }
-    if (files.includes(file.replace(/\.js$/, '.native.js'))) {
-      pkg['react-native'] = {
-        'index.js': 'index.native.js'
-      }
-    }
+    pkg['react-native'] = 'index.cjs.js'
   }
   await writeFile(pkgFile, JSON.stringify(pkg, null, 2))
 }
@@ -201,13 +199,14 @@ async function process (dir) {
     if (file.endsWith('index.browser.js')) {
       await replaceToESM(dir, file, source)
     } else if (!file.endsWith('index.native.js')) {
-      let tasks = [
-        replaceToOld(dir, file, source),
+      await Promise.all([
         replaceToCJS(dir, file, source),
         replaceToESM(dir, file, source),
         replacePackage(dir, file, files)
-      ]
-      await Promise.all(tasks)
+      ])
+      if (!files.includes(file.replace(/\.js$/, '.native.js'))) {
+        await replaceToOld(dir, file, source)
+      }
     }
   }))
 }
