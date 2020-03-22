@@ -90,18 +90,7 @@ import { lib } from 'https://cdn.jsdelivr.net/npm/lib/index.js'
 5. Test the result by calling `npx dual-publish --check`.
    It will create a folder in your project with converted files.
    Review them manually.
-6. Until we have [temporary bug](https://github.com/facebook/metro/issues/535)
-   in React Native with `.cjs` you need to tell React Native users to add
-   this lines to `metro.config.js`:
-
-   ```js
-   module.exports = {
-     resolver: {
-      resolverMainFields: ['react-native', 'browser', 'main']
-     }
-   }
-   ```
-7. Publish your project with `npx dual-publish` instead of `npm publish`.
+6. Publish your project with `npx dual-publish` instead of `npm publish`.
 
    ```sh
    npx dual-publish
