@@ -27,6 +27,7 @@
   "license": "MIT",
   "repository": "ai/dual-publish",
   "devDependencies": {
+    "@babel/core": "^7.9.0",
     "@logux/eslint-config": "^36.1.1",
     "eslint": "^6.8.0",
     "eslint-ci": "^1.0.0",
@@ -45,7 +46,7 @@
     "jest-ci": "^0.1.1",
     "lint-staged": "^10.0.8",
     "metro": "^0.59.0",
-    "metro-core": "^0.59.0",
+    "metro-react-native-babel-transformer": "^0.59.0",
     "nanoid": "^2.1.11",
     "typescript": "^3.8.3",
     "webpack": "^4.42.0",

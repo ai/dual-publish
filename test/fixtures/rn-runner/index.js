@@ -1,3 +1,3 @@
-let { a } = require('lib/a')
+import { a } from 'lib/a'
 
 a()
