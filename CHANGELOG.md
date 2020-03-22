@@ -1,6 +1,10 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.8.4
+* Allow to React Native without `resolverMainFields` (by @farwayer).
+* Fix `index.native.js` support.
+
 ## 0.8.3
 * Fix React Native `package.json` warnings.
 
