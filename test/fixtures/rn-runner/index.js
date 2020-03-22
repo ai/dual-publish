@@ -1,3 +1,3 @@
-import { a } from 'lib/a'
+import { a } from 'rn-lib'
 
 a()

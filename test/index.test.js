@@ -32,11 +32,14 @@ function copyDirs (...dirs) {
 
 async function replaceConsole (dir) {
   let files = await globby('**/*.js', { cwd: dir, absolute: true })
-  await Promise.all(files.map(async i => {
-    let source = await readFile(i)
-    let fixed = source.toString().replace(/'cjs /, '\'esm ')
-    await writeFile(i, fixed)
-  }))
+  await Promise.all(files
+    .filter(i => !i.includes('.cjs.'))
+    .map(async i => {
+      let source = await readFile(i)
+      let fixed = source.toString().replace(/'cjs /, '\'esm ')
+      await writeFile(i, fixed)
+    })
+  )
 }
 
 async function buildWithWebpack (path) {
@@ -152,9 +155,10 @@ it('works with modules in webpack', async () => {
 })
 
 it('compiles for React Native', async () => {
-  let [lib, runner] = await copyDirs('lib', 'rn-runner')
+  let [lib, runner] = await copyDirs('rn-lib', 'rn-runner')
   await processDir(lib)
-  await exec(`yarn add lib@${ lib }`, { cwd: runner })
+  await replaceConsole(lib)
+  await exec(`yarn add rn-lib@${ lib }`, { cwd: runner })
 
   let cfg = await metro.loadConfig()
   cfg = {
@@ -171,12 +175,14 @@ it('compiles for React Native', async () => {
       babelTransformerPath: 'metro-react-native-babel-transformer'
     }
   }
-  await metro.runBuild(cfg, {
+  let { code } = await metro.runBuild(cfg, {
     entry: 'index.js',
-    // speed-up build
     minify: false,
     sourceMap: false
   })
+  expect(code).toContain('console.log(\'native a\')')
+  expect(code).toContain('console.log(\'cjs b\')')
+  expect(code).toContain('console.log(\'cjs c\')')
 })
 
 it('works with require in webpack', async () => {
