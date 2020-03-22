@@ -169,7 +169,7 @@ async function replacePackage (dir, file, files) {
   if (files.includes(file.replace(/\.js$/, '.native.js'))) {
     pkg['react-native'] = 'index.native.js'
   } else {
-    pkg['react-native'] = 'index.cjs.js'
+    pkg['react-native'] = 'index.js'
   }
   await writeFile(pkgFile, JSON.stringify(pkg, null, 2))
 }

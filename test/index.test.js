@@ -3,6 +3,7 @@ let { join, dirname } = require('path')
 let { promisify } = require('util')
 let { tmpdir } = require('os')
 let webpack = require('webpack')
+let metro = require('metro')
 let nanoid = require('nanoid/non-secure')
 let globby = require('globby')
 let child = require('child_process')
@@ -154,13 +155,28 @@ it('compiles for React Native', async () => {
   let [lib, runner] = await copyDirs('lib', 'rn-runner')
   await processDir(lib)
   await exec(`yarn add lib@${ lib }`, { cwd: runner })
-  let out
-  try {
-    await exec('npx metro build -O ./out ./index.js', { cwd: runner })
-  } catch (e) {
-    out = e.message
+
+  let cfg = await metro.loadConfig()
+  cfg = {
+    ...cfg,
+    projectRoot: runner,
+    watchFolders: [
+      runner,
+      join(__dirname, '..', 'node_modules')
+    ],
+    reporter: { update: () => {} },
+    cacheStores: [],
+    resetCache: true,
+    transformer: {
+      babelTransformerPath: 'metro-react-native-babel-transformer'
+    }
   }
-  expect(out).toContain('ReferenceError: SHA-1 for file')
+  await metro.runBuild(cfg, {
+    entry: 'index.js',
+    // speed-up build
+    minify: false,
+    sourceMap: false
+  })
 })
 
 it('works with require in webpack', async () => {
