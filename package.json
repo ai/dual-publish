@@ -50,7 +50,7 @@
     "nanoid": "^2.1.11",
     "typescript": "^3.8.3",
     "webpack": "^4.42.0",
-    "yaspeller": "^6.0.3",
+    "yaspeller": "^6.0.4",
     "yaspeller-ci": "^1.0.2"
   },
   "eslintConfig": {
