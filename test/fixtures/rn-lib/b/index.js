@@ -1,4 +1,4 @@
-b = () => {
+let b = () => {
   console.log('cjs b')
 }
 

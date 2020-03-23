@@ -7,7 +7,6 @@ let fs = require('fs')
 
 let writeFile = promisify(fs.writeFile)
 let readFile = promisify(fs.readFile)
-let unlink = promisify(fs.unlink)
 
 const NAME = /(^|\n)(let\s+|const\s+|var\s+)(\S+|{[^}]+})\s*=/m
 
@@ -106,23 +105,6 @@ async function replaceToESM (dir, file, source) {
   await writeFile(join(dir, file), esm)
 }
 
-async function replaceToNative (dir, file, source) {
-  let cjs = replaceRequire(
-    source,
-    exported => exported,
-    (named, prefix, varType, name) => {
-      let path = getPath(file, named, 'cjs')
-      return `${ prefix }${ varType }${ name } = require(${ path })`
-    },
-    (nameless, prefix) => {
-      let path = getPath(file, nameless, 'cjs')
-      return `${ prefix }require(${ path })`
-    }
-  )
-  await writeFile(join(dir, file.replace(/\.native\.js$/, '.cjs$&')), cjs)
-  await unlink(join(dir, file))
-}
-
 async function replaceToCJS (dir, file, source) {
   let cjs = replaceRequire(
     source,
@@ -136,10 +118,7 @@ async function replaceToCJS (dir, file, source) {
       return `${ prefix }require(${ path })`
     }
   )
-  await Promise.all([
-    writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs),
-    writeFile(join(dir, file.replace(/\.js$/, '.cjs.js')), cjs)
-  ])
+  await writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs)
 }
 
 async function replacePackage (dir, file, files) {
@@ -151,6 +130,8 @@ async function replacePackage (dir, file, files) {
   pkg.type = 'module'
   pkg.main = 'index.cjs'
   pkg.module = 'index.js'
+  pkg['react-native'] = 'index.js'
+
   if (file === 'index.js') {
     pkg.exports = { }
     for (let i of files) {
@@ -166,11 +147,19 @@ async function replacePackage (dir, file, files) {
         pkg.exports[path].browser = path + '/index.browser.js'
       }
     }
-  } else if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
+  }
+
+  if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
     pkg.browser = {
       './index.js': './index.browser.js'
     }
   }
+  if (files.includes(file.replace(/\.js$/, '.native.js'))) {
+    pkg['react-native'] = {
+      './index.js': './index.native.js'
+    }
+  }
+
   await writeFile(pkgFile, JSON.stringify(pkg, null, 2))
 }
 
@@ -209,7 +198,7 @@ async function process (dir) {
     if (file.endsWith('index.browser.js')) {
       await replaceToESM(dir, file, source)
     } else if (file.endsWith('index.native.js')) {
-      await replaceToNative(dir, file, source)
+      await replaceToESM(dir, file, source)
     } else {
       await Promise.all([
         replaceToCJS(dir, file, source),

@@ -160,9 +160,8 @@ it('compiles for React Native', async () => {
   await replaceConsole(lib)
   await exec(`yarn add rn-lib@${ lib }`, { cwd: runner })
 
-  let cfg = await metro.loadConfig()
-  cfg = {
-    ...cfg,
+  let config = {
+    ...await metro.loadConfig(),
     projectRoot: runner,
     watchFolders: [
       runner,
@@ -171,18 +170,21 @@ it('compiles for React Native', async () => {
     reporter: { update: () => {} },
     cacheStores: [],
     resetCache: true,
+    resolver: {
+      resolverMainFields: ['react-native', 'browser', 'main']
+    },
     transformer: {
       babelTransformerPath: 'metro-react-native-babel-transformer'
     }
   }
-  let { code } = await metro.runBuild(cfg, {
+  let { code } = await metro.runBuild(config, {
     entry: 'index.js',
     minify: false,
     sourceMap: false
   })
   expect(code).toContain('console.log(\'native a\')')
-  expect(code).toContain('console.log(\'cjs b\')')
-  expect(code).toContain('console.log(\'cjs c\')')
+  expect(code).toContain('console.log(\'esm b\')')
+  expect(code).toContain('console.log(\'esm c\')')
 })
 
 it('works with require in webpack', async () => {
