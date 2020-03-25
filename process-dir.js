@@ -133,6 +133,7 @@ async function replacePackage (dir, file, files) {
   pkg['react-native'] = 'index.js'
 
   if (file === 'index.js') {
+    delete pkg.eslintIgnore
     pkg.exports = { }
     for (let i of files) {
       let path = '.'
