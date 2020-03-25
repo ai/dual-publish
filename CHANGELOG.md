@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.8.6
+* Clean `eslintIgnore` from `package.json`.
+
 ## 0.8.5
 * Remove extra files for React Native.
 
