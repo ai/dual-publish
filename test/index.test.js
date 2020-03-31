@@ -147,11 +147,40 @@ it('works with modules in webpack', async () => {
   let bundle = await buildWithWebpack(join(client, 'index.js'))
 
   let { stdout, stderr } = await exec('node ' + bundle)
-  expect(stderr).toEqual('')
-  expect(stdout).toEqual('esm d\nesm a\nesm b\nesm browser c\nesm lib\n')
+  expect(trimCode(stderr)).toEqual(
+    'ExperimentalWarning: The ESM module loader is experimental.\n'
+  )
+  expect(stdout).toEqual(
+    'esm d\nesm a\nesm b\nesm browser c\nesm lib\n'
+  )
 
   let buffer = await readFile(bundle)
   expect(buffer.toString()).not.toContain('shaked-export')
+})
+
+it('works with modules in Rollup', async () => {
+  let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
+  await processDir(lib)
+  await processDir(clientLib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${ lib }`, { cwd: client })
+  await exec(`yarn add client-lib@${ clientLib }`, { cwd: client })
+
+  let bundle = join(client, 'bundle.js')
+  await exec(
+    `npx rollup ${ join(client, 'index.js') } ` +
+    `-o ${ bundle } -f es ` +
+    '-p @rollup/plugin-node-resolve={browser:true} -p rollup-plugin-svg'
+  )
+
+  let str = (await readFile(bundle)).toString()
+  expect(str).not.toContain('shaked-export')
+  expect(str).not.toContain('cjs')
+  expect(str).toContain('esm d')
+  expect(str).toContain('esm a')
+  expect(str).toContain('esm b')
+  expect(str).toContain('esm browser c')
+  expect(str).toContain('esm lib')
 })
 
 it('compiles for React Native', async () => {
@@ -195,10 +224,12 @@ it('works with require in webpack', async () => {
   await exec(`yarn add lib@${ lib }`, { cwd: client })
   await exec(`yarn add client-lib@${ clientLib }`, { cwd: client })
 
-  let bundle = await buildWithWebpack(join(client, 'cjs.js'))
+  let bundle = await buildWithWebpack(join(client, 'cjs.cjs'))
 
   let { stdout, stderr } = await exec('node ' + bundle)
-  expect(stderr).toEqual('')
+  expect(trimCode(stderr)).toEqual(
+    'ExperimentalWarning: The ESM module loader is experimental.\n'
+  )
   expect(stdout).toEqual('esm d\nesm a\nesm b\nesm browser c\nesm lib\n')
 })
 

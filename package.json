@@ -29,6 +29,7 @@
   "devDependencies": {
     "@babel/core": "^7.9.0",
     "@logux/eslint-config": "^36.1.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
     "eslint": "^6.8.0",
     "eslint-ci": "^1.0.0",
     "eslint-config-standard": "^14.1.1",
@@ -48,6 +49,8 @@
     "metro": "^0.59.0",
     "metro-react-native-babel-transformer": "^0.59.0",
     "nanoid": "^3.0.2",
+    "rollup": "^2.3.1",
+    "rollup-plugin-svg": "^2.0.0",
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",
     "yaspeller": "^6.1.0",
