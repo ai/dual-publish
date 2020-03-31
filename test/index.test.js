@@ -1,10 +1,10 @@
 let { remove, copy, readFile, writeFile } = require('fs-extra')
 let { join, dirname } = require('path')
 let { promisify } = require('util')
+let { nanoid } = require('nanoid/non-secure')
 let { tmpdir } = require('os')
 let webpack = require('webpack')
 let metro = require('metro')
-let nanoid = require('nanoid/non-secure')
 let globby = require('globby')
 let child = require('child_process')
 
