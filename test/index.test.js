@@ -183,6 +183,29 @@ it('works with modules in Rollup', async () => {
   expect(str).toContain('esm lib')
 })
 
+it('works with modules in Parcel', async () => {
+  let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
+  await processDir(lib)
+  await processDir(clientLib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${ lib }`, { cwd: client })
+  await exec(`yarn add client-lib@${ clientLib }`, { cwd: client })
+
+  await exec(
+    `npx parcel build ${ join(client, 'index.js') } ` +
+    `-d ${ client } -o bundle.js --no-cache --experimental-scope-hoisting`
+  )
+
+  let str = (await readFile(join(client, 'bundle.js'))).toString()
+  expect(str).not.toContain('shaked-export')
+  expect(str).not.toContain('cjs')
+  expect(str).toContain('esm d')
+  expect(str).toContain('esm a')
+  expect(str).toContain('esm b')
+  expect(str).toContain('esm browser c')
+  expect(str).toContain('esm lib')
+})
+
 it('compiles for React Native', async () => {
   let [lib, runner] = await copyDirs('rn-lib', 'rn-runner')
   await processDir(lib)
