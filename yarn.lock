@@ -2371,7 +2371,7 @@ ci-job-number@^0.3.0:
   resolved "https://registry.yarnpkg.com/ci-job-number/-/ci-job-number-0.3.1.tgz#4354e45bb3ed5a7301f09358d2876d510d4a570e"
   integrity sha512-OfY2Cg+mTqZz7lWOxONGbAXVZNNWPSiyGtOpAjYHEVTXIae8lGCOg3cDfJpPh8zcl+2CqItOsxbvH6ueV+QOmw==
 
-ci-job-number@^1.0.0:
+ci-job-number@^1.0.0, ci-job-number@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/ci-job-number/-/ci-job-number-1.2.1.tgz#42d3c730f227a4128bb0180911d62a818e709254"
   integrity sha512-LZP3CjLaY/jpHNXN9qZ59w160LteXlq5ClabIcqjDNsABY34h7VemHvfSySuviP257fsHPXsEZ9s6JDP/c/luA==
