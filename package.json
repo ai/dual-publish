@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "chalk": "^3.0.0",
-    "clean-publish": "^1.1.6",
+    "clean-publish": "^1.1.7",
     "globby": "^11.0.0",
     "line-column": "^1.0.2",
     "rimraf": "^3.0.2"
@@ -46,12 +46,12 @@
     "husky": "^4.2.3",
     "jest": "^25.2.4",
     "jest-ci": "^0.1.1",
-    "lint-staged": "^10.1.0",
+    "lint-staged": "^10.1.1",
     "metro": "^0.59.0",
     "metro-react-native-babel-transformer": "^0.59.0",
     "nanoid": "^3.0.2",
     "parcel": "^1.12.4",
-    "rollup": "^2.3.1",
+    "rollup": "^2.3.2",
     "rollup-plugin-svg": "^2.0.0",
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",
