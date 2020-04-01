@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.8.7
+* Remove `clean-publish` hack.
+
 ## 0.8.6
 * Clean `eslintIgnore` from `package.json`.
 
