@@ -178,14 +178,11 @@ async function process (dir) {
   let pattern = '**/*.js'
 
   let pkgPath = join(dir, 'package.json')
-  let pkgFile = {}
-
   if (fs.existsSync(pkgPath)) {
-    pkgFile = JSON.parse(await readFile(pkgPath))
-  }
-
-  if ('files' in pkgFile) {
-    pattern = pkgFile.files
+    let pkg = JSON.parse(await readFile(pkgPath))
+    if (pkg.files) {
+      pattern = pkg.files
+    }
   }
 
   let all = await globby(pattern, { ignore, cwd: dir })

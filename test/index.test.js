@@ -129,6 +129,11 @@ it('reads npmignore', async () => {
   expect(files).not.toContain('e/index.cjs')
 })
 
+it('reads package.files', async () => {
+  let [lib] = await copyDirs('files')
+  await processDir(lib)
+})
+
 it('throws on non-index file', async () => {
   let [lib] = await copyDirs('non-index-error')
   let err
