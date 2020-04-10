@@ -1,6 +1,6 @@
 {
   "name": "dual-publish",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Publish project as dual ES modules and CommonJS package",
   "keywords": [
     "esm",
