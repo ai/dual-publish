@@ -134,6 +134,11 @@ it('reads package.files', async () => {
   await processDir(lib)
 })
 
+it('reads package.bin', async () => {
+  let [lib1, lib2] = await copyDirs('bin1', 'bin2')
+  await Promise.all([processDir(lib1), processDir(lib2)])
+})
+
 it('throws on non-index file', async () => {
   let [lib] = await copyDirs('non-index-error')
   let err

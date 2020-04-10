@@ -1,0 +1,5 @@
+{
+  "name": "bin",
+  "version": "0.0.0",
+  "bin": "bin.js"
+}

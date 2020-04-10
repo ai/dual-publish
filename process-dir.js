@@ -183,6 +183,11 @@ async function process (dir) {
     if (pkg.files) {
       pattern = pkg.files
     }
+    if (typeof pkg.bin === 'string') {
+      ignore.push(pkg.bin)
+    } else if (typeof pkg.bin === 'object') {
+      ignore.push(...Object.values(pkg.bin))
+    }
   }
 
   let all = await globby(pattern, { ignore, cwd: dir })
