@@ -191,6 +191,15 @@ if (ciJob() === 1) {
     await exec('npx tsc --build ' + join(runner, 'tsconfig.json'))
   })
 
+  it('works with ts-node', async () => {
+    let [lib, runner] = await copyDirs('lib', 'ts-node')
+    await processDir(lib)
+    await replaceConsole(lib)
+    await exec(`yarn add lib@${ lib }`, { cwd: runner })
+    let { stdout } = await exec('npx ts-node ' + join(runner, 'index.ts'))
+    expect(stdout).toEqual('cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\n')
+  })
+
   it('works with modules in webpack', async () => {
     let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
     await processDir(lib)
