@@ -175,7 +175,20 @@ async function process (dir) {
 
   ignore.push('**/*.test.js', '**/*.spec.js')
 
-  let all = await globby('**/*.js', { ignore, cwd: dir })
+  let pattern = '**/*.js'
+
+  let pkgPath = join(dir, 'package.json')
+  let pkgFile = {}
+
+  if (fs.existsSync(pkgPath)) {
+    pkgFile = JSON.parse(await readFile(pkgPath))
+  }
+
+  if ('files' in pkgFile) {
+    pattern = pkgFile.files
+  }
+
+  let all = await globby(pattern, { ignore, cwd: dir })
 
   let sources = await Promise.all(all.map(async file => {
     let source = await readFile(join(dir, file))
