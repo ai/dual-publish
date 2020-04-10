@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.9
+* Add `package.files` support (by Ali Gasymov).
+
 ## 0.8.7
 * Remove `clean-publish` hack.
 
