@@ -7,6 +7,8 @@ let fs = require('fs')
 
 let writeFile = promisify(fs.writeFile)
 let readFile = promisify(fs.readFile)
+let lstat = promisify(fs.lstat)
+let readdir = promisify(fs.readdir)
 
 const NAME = /(^|\n)(let\s+|const\s+|var\s+)(\S+|{[^}]+})\s*=/m
 
@@ -164,16 +166,30 @@ async function replacePackage (dir, file, files) {
 }
 
 async function process (dir) {
+  let ignorePatterns = []
+  let removePatterns = []
+
   let npmignorePath = join(dir, '.npmignore')
-  let ignore = []
   if (fs.existsSync(npmignorePath)) {
-    ignore = await readFile(npmignorePath)
-    ignore = ignore.toString().split('\n').filter(i => !!i).map(i => {
-      return i.endsWith(sep) ? i.slice(0, -1) : i
-    })
+    removePatterns =
+      (await readFile(npmignorePath))
+        .toString()
+        .split('\n')
+        .filter(i => !!i)
+        .map(i => {
+          return i.endsWith(sep) ? i.slice(0, -1) : i
+        })
   }
 
-  ignore.push('**/*.test.js', '**/*.spec.js')
+  removePatterns.push('**/*.test.js', '**/*.spec.js')
+
+  let filesForRemove = await globby(removePatterns, { cwd: dir })
+
+  filesForRemove.forEach(async fileForRemove => {
+    await rimraf(join(dir, fileForRemove))
+  })
+
+  await removeEmptyDirectories(dir)
 
   let pattern = '**/*.js'
 
@@ -184,13 +200,13 @@ async function process (dir) {
       pattern = pkg.files
     }
     if (typeof pkg.bin === 'string') {
-      ignore.push(pkg.bin)
+      ignorePatterns.push(pkg.bin)
     } else if (typeof pkg.bin === 'object') {
-      ignore.push(...Object.values(pkg.bin))
+      ignorePatterns.push(...Object.values(pkg.bin))
     }
   }
 
-  let all = await globby(pattern, { ignore, cwd: dir })
+  let all = await globby(pattern, { ignore: ignorePatterns, cwd: dir })
 
   let sources = await Promise.all(all.map(async file => {
     let source = await readFile(join(dir, file))
@@ -222,6 +238,31 @@ async function process (dir) {
       ])
     }
   }))
+}
+
+async function removeEmptyDirectories (dir) {
+  let fileStats = await lstat(dir)
+
+  if (!fileStats.isDirectory()) {
+    return
+  }
+
+  let files = await readdir(dir)
+
+  if (files.length > 0) {
+    let removeEmptyDirectoriesPromises = files.map(
+      file => removeEmptyDirectories(join(dir, file))
+    )
+
+    await Promise.all(removeEmptyDirectoriesPromises)
+
+    // The parent directory may become empty after deleting subdirectories
+    files = await readdir(dir)
+  }
+
+  if (files.length === 0) {
+    await rimraf(dir)
+  }
 }
 
 module.exports = async function processDir (dir) {
