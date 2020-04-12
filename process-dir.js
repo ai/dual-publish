@@ -140,6 +140,7 @@ async function replacePackage (dir, file, files) {
       if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
       pkg.exports[path + '/package.json'] = path + '/package.json'
       pkg.exports[path] = {
+        [path]: path + '/index.cjs',
         require: path + '/index.cjs',
         import: path + '/index.js'
       }
