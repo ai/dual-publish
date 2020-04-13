@@ -171,14 +171,10 @@ async function process (dir) {
 
   let npmignorePath = join(dir, '.npmignore')
   if (fs.existsSync(npmignorePath)) {
-    removePatterns =
-      (await readFile(npmignorePath))
-        .toString()
-        .split('\n')
-        .filter(i => !!i)
-        .map(i => {
-          return i.endsWith(sep) ? i.slice(0, -1) : i
-        })
+    removePatterns = (await readFile(npmignorePath)).toString()
+    removePatterns = removePatterns.split('\n').filter(i => !!i).map(i => {
+      return i.endsWith(sep) ? i.slice(0, -1) : i
+    })
   }
 
   removePatterns.push('**/*.test.js', '**/*.spec.js')
@@ -247,20 +243,18 @@ async function removeEmptyDirectories (dir) {
     return
   }
 
-  let files = await readdir(dir)
+  let filesAfter = await readdir(dir)
 
-  if (files.length > 0) {
-    let removeEmptyDirectoriesPromises = files.map(
+  if (filesAfter.length > 0) {
+    await Promise.all(filesAfter.map(
       file => removeEmptyDirectories(join(dir, file))
-    )
-
-    await Promise.all(removeEmptyDirectoriesPromises)
+    ))
 
     // The parent directory may become empty after deleting subdirectories
-    files = await readdir(dir)
+    filesAfter = await readdir(dir)
   }
 
-  if (files.length === 0) {
+  if (filesAfter.length === 0) {
     await rimraf(dir)
   }
 }
