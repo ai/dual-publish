@@ -181,11 +181,11 @@ async function process (dir) {
 
   let filesForRemove = await globby(removePatterns, { cwd: dir })
 
-  filesForRemove.forEach(async fileForRemove => {
-    await rimraf(join(dir, fileForRemove))
-  })
+  await Promise.all(filesForRemove.map(fileForRemove => {
+    return rimraf(join(dir, fileForRemove))
+  }))
 
-  await removeEmptyDirectories(dir)
+  await removeEmpty(dir)
 
   let pattern = '**/*.js'
 
@@ -236,25 +236,25 @@ async function process (dir) {
   }))
 }
 
-async function removeEmptyDirectories (dir) {
+async function removeEmpty (dir) {
   let fileStats = await lstat(dir)
 
   if (!fileStats.isDirectory()) {
     return
   }
 
-  let filesAfter = await readdir(dir)
+  let before = await readdir(dir)
 
-  if (filesAfter.length > 0) {
-    await Promise.all(filesAfter.map(
-      file => removeEmptyDirectories(join(dir, file))
+  if (before.length > 0) {
+    await Promise.all(before.map(
+      file => removeEmpty(join(dir, file))
     ))
 
     // The parent directory may become empty after deleting subdirectories
-    filesAfter = await readdir(dir)
+    before = await readdir(dir)
   }
 
-  if (filesAfter.length === 0) {
+  if (before.length === 0) {
     await rimraf(dir)
   }
 }
