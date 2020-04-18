@@ -171,20 +171,17 @@ async function process (dir) {
 
   let npmignorePath = join(dir, '.npmignore')
   if (fs.existsSync(npmignorePath)) {
-    removePatterns = (await readFile(npmignorePath)).toString()
-    removePatterns = removePatterns.split('\n').filter(i => !!i).map(i => {
-      return i.endsWith(sep) ? i.slice(0, -1) : i
-    })
+    removePatterns = (await readFile(npmignorePath))
+      .toString()
+      .split('\n')
+      .filter(i => !!i)
+      .map(i => i.endsWith(sep) ? i.slice(0, -1) : i)
   }
 
   removePatterns.push('**/*.test.js', '**/*.spec.js')
 
-  let filesForRemove = await globby(removePatterns, { cwd: dir })
-
-  await Promise.all(filesForRemove.map(fileForRemove => {
-    return rimraf(join(dir, fileForRemove))
-  }))
-
+  let removeFiles = await globby(removePatterns, { cwd: dir })
+  await Promise.all(removeFiles.map(i => rimraf(join(dir, i))))
   await removeEmpty(dir)
 
   let pattern = '**/*.js'
@@ -237,24 +234,15 @@ async function process (dir) {
 }
 
 async function removeEmpty (dir) {
-  let fileStats = await lstat(dir)
+  if (!(await lstat(dir)).isDirectory()) return
 
-  if (!fileStats.isDirectory()) {
-    return
+  let entries = await readdir(dir)
+  if (entries.length > 0) {
+    await Promise.all(entries.map(i => removeEmpty(join(dir, i))))
+    entries = await readdir(dir)
   }
 
-  let before = await readdir(dir)
-
-  if (before.length > 0) {
-    await Promise.all(before.map(
-      file => removeEmpty(join(dir, file))
-    ))
-
-    // The parent directory may become empty after deleting subdirectories
-    before = await readdir(dir)
-  }
-
-  if (before.length === 0) {
+  if (entries.length === 0) {
     await rimraf(dir)
   }
 }
