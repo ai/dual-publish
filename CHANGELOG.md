@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.10.1
+* Fix `.npmignore` support (by Ali Gasymov).
+
 ## 0.10
 * Add `package.bin` support.
 
