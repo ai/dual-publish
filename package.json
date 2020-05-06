@@ -51,7 +51,7 @@
     "metro-react-native-babel-transformer": "^0.59.0",
     "nanoid": "^3.1.5",
     "parcel": "^1.12.4",
-    "rollup": "^2.7.6",
+    "rollup": "^2.8.0",
     "rollup-plugin-svg": "^2.0.0",
     "ts-node": "^8.10.1",
     "typescript": "^3.8.3",
