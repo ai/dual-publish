@@ -167,7 +167,32 @@ it('throws on un-processed require', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toEqual('Unsupported require() at index.js:2:2')
+  expect(err.message).toEqual(
+    'Unsupported require() at index.js:2:2.\n' +
+    'ESM supports only top-level require with static path.'
+  )
+})
+
+it('throws on un-processed export', async () => {
+  let [lib] = await copyDirs('named-export-error')
+  let err
+  try {
+    await processDir(lib)
+  } catch (e) {
+    err = e
+  }
+  expect(err.message).toContain('Unsupported export at index.js:1:1')
+})
+
+it('throws on un-processed multiline export', async () => {
+  let [lib] = await copyDirs('multiline-export-error')
+  let err
+  try {
+    await processDir(lib)
+  } catch (e) {
+    err = e
+  }
+  expect(err.message).toContain('Unsupported export at index.js:1:1')
 })
 
 it('throws on un-processed exports', async () => {

@@ -68,9 +68,22 @@ function replaceRequire (source, exported, named, nameless) {
     )
 }
 
-async function replaceToESM (dir, file, source) {
+async function replaceToESM (dir, file, buffer) {
+  let src = buffer.toString()
+  let wrongExportIndex = src.search(/module\.exports\s*=\s*{\s*\w+:/)
+  if (wrongExportIndex !== -1) {
+    let { line, col } = lineColumn(src).fromIndex(wrongExportIndex)
+    throw error(
+      `Unsupported export at ${ file }:${ line }:${ col }.\n` +
+      'Use named export like:\n' +
+      '  const prop = 1;\n' +
+      '  function method () { … }\n' +
+      '  module.exports = { prop, method }'
+    )
+  }
+
   let esm = replaceRequire(
-    source,
+    src,
     (exported, prefix, postfix) => {
       if (postfix === '{') {
         return `${ prefix }export ${ postfix }`
@@ -92,7 +105,10 @@ async function replaceToESM (dir, file, source) {
   let requireIndex = esm.search(/(\W|^)require\(/)
   if (requireIndex !== -1) {
     let { line, col } = lineColumn(esm).fromIndex(requireIndex)
-    throw error(`Unsupported require() at ${ file }:${ line }:${ col }`)
+    throw error(
+      `Unsupported require() at ${ file }:${ line }:${ col }.\n` +
+      'ESM supports only top-level require with static path.'
+    )
   }
 
   let exportIndex = esm.search(/(\W|^)(module\.)?exports\./)
