@@ -79,14 +79,10 @@ it('compiles for Node.js', async () => {
     let esm = await exec(esmNode + join(runner, 'index.mjs'))
     if (process.version.startsWith('v12.')) {
       expect(trimCode(esm.stderr)).toEqual(
-        'ExperimentalWarning: The ESM module loader is experimental.\n' +
-        'ExperimentalWarning: Conditional exports is an experimental feature.' +
-        ' This feature could change at any time\n'
-      )
-    } else {
-      expect(trimCode(esm.stderr)).toEqual(
         'ExperimentalWarning: The ESM module loader is experimental.\n'
       )
+    } else {
+      expect(esm.stderr).toEqual('')
     }
     expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
   }
@@ -216,12 +212,8 @@ if (ciJob() === 1) {
     let bundle = await buildWithWebpack(join(client, 'index.js'))
 
     let { stdout, stderr } = await exec('node ' + bundle)
-    expect(trimCode(stderr)).toEqual(
-      'ExperimentalWarning: The ESM module loader is experimental.\n'
-    )
-    expect(stdout).toEqual(
-      'esm d\nesm a\nesm b\nesm browser c\nesm lib\n'
-    )
+    expect(stderr).toEqual('')
+    expect(stdout).toEqual('esm d\nesm a\nesm b\nesm browser c\nesm lib\n')
 
     let buffer = await readFile(bundle)
     expect(buffer.toString()).not.toContain('shaked-export')
@@ -319,9 +311,7 @@ if (ciJob() === 1) {
     let bundle = await buildWithWebpack(join(client, 'cjs.cjs'))
 
     let { stdout, stderr } = await exec('node ' + bundle)
-    expect(trimCode(stderr)).toEqual(
-      'ExperimentalWarning: The ESM module loader is experimental.\n'
-    )
+    expect(stderr).toEqual('')
     expect(stdout).toEqual('esm d\nesm a\nesm b\nesm browser c\nesm lib\n')
   })
 }
