@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.10.2
+* Add error message on wrong export format.
+
 ## 0.10.1
 * Fix `.npmignore` support (by Ali Gasymov).
 
