@@ -21,19 +21,17 @@ function error (msg) {
 function getPath (file, statement, ext) {
   let path = statement.match(/require\(([^)]+)\)/)[1]
   if (/\/index["']/.test(path)) {
-    throw error(
-      'Replace `index` in require() to `index.js` at ' + file
-    )
+    throw error('Replace `index` in require() to `index.js` at ' + file)
   }
   if (/\.(svg|png|css|sass)["']$/.test(path)) {
     return path
   } else if (/^["']..?(["']$|\/)/.test(path)) {
     if (/\/index\.js(["'])$/.test(path)) {
-      return path.replace(/\/index\.js(["'])$/, `/index.${ ext }$1`)
+      return path.replace(/\/index\.js(["'])$/, `/index.${ext}$1`)
     } else if (/\/["']$/.test(path)) {
-      return path.replace(/["']$/, `index.${ ext }$&`)
+      return path.replace(/["']$/, `index.${ext}$&`)
     } else {
-      return path.replace(/["']$/, `/index.${ ext }$&`)
+      return path.replace(/["']$/, `/index.${ext}$&`)
     }
   } else {
     return path
@@ -51,9 +49,8 @@ function extractPrefix (str) {
 function replaceRequire (source, exported, named, nameless) {
   return source
     .toString()
-    .replace(
-      /(^|\n)module.exports\s*=\s*\S/g,
-      str => exported(str, extractPrefix(str), str.slice(-1))
+    .replace(/(^|\n)module.exports\s*=\s*\S/g, str =>
+      exported(str, extractPrefix(str), str.slice(-1))
     )
     .replace(
       /(^|\n)(let|const|var)\s+({[^}]+}|\S+)\s*=\s*require\([^)]+\)/g,
@@ -62,9 +59,8 @@ function replaceRequire (source, exported, named, nameless) {
         return named(str, prefix, varType, name)
       }
     )
-    .replace(
-      /(^|\n)require\(([^)]+)\)/g,
-      str => nameless(str, extractPrefix(str))
+    .replace(/(^|\n)require\(([^)]+)\)/g, str =>
+      nameless(str, extractPrefix(str))
     )
 }
 
@@ -74,11 +70,11 @@ async function replaceToESM (dir, file, buffer) {
   if (wrongExportIndex !== -1) {
     let { line, col } = lineColumn(src).fromIndex(wrongExportIndex)
     throw error(
-      `Unsupported export at ${ file }:${ line }:${ col }.\n` +
-      'Use named export like:\n' +
-      '  const prop = 1;\n' +
-      '  function method () { … }\n' +
-      '  module.exports = { prop, method }'
+      `Unsupported export at ${file}:${line}:${col}.\n` +
+        'Use named export like:\n' +
+        '  const prop = 1;\n' +
+        '  function method () { … }\n' +
+        '  module.exports = { prop, method }'
     )
   }
 
@@ -86,19 +82,19 @@ async function replaceToESM (dir, file, buffer) {
     src,
     (exported, prefix, postfix) => {
       if (postfix === '{') {
-        return `${ prefix }export ${ postfix }`
+        return `${prefix}export ${postfix}`
       } else {
-        return `${ prefix }export default ${ postfix }`
+        return `${prefix}export default ${postfix}`
       }
     },
     (named, prefix, varType, name) => {
       let path = getPath(file, named, 'js')
       name = name.replace(/\s*:\s*/, ' as ')
-      return `${ prefix }import ${ name } from ${ path }`
+      return `${prefix}import ${name} from ${path}`
     },
     (nameless, prefix) => {
       let path = getPath(file, nameless, 'js')
-      return `${ prefix }import ${ path }`
+      return `${prefix}import ${path}`
     }
   )
 
@@ -106,8 +102,8 @@ async function replaceToESM (dir, file, buffer) {
   if (requireIndex !== -1) {
     let { line, col } = lineColumn(esm).fromIndex(requireIndex)
     throw error(
-      `Unsupported require() at ${ file }:${ line }:${ col }.\n` +
-      'ESM supports only top-level require with static path.'
+      `Unsupported require() at ${file}:${line}:${col}.\n` +
+        'ESM supports only top-level require with static path.'
     )
   }
 
@@ -116,7 +112,7 @@ async function replaceToESM (dir, file, buffer) {
     let { line, col } = lineColumn(esm).fromIndex(exportIndex)
     throw error(
       'Replace module.exports.x to module.exports = { x } ' +
-      `at ${ file }:${ line }:${ col }`
+        `at ${file}:${line}:${col}`
     )
   }
 
@@ -129,11 +125,11 @@ async function replaceToCJS (dir, file, source) {
     exported => exported,
     (named, prefix, varType, name) => {
       let path = getPath(file, named, 'cjs')
-      return `${ prefix }${ varType }${ name } = require(${ path })`
+      return `${prefix}${varType}${name} = require(${path})`
     },
     (nameless, prefix) => {
       let path = getPath(file, nameless, 'cjs')
-      return `${ prefix }require(${ path })`
+      return `${prefix}require(${path})`
     }
   )
   await writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs)
@@ -141,7 +137,7 @@ async function replaceToCJS (dir, file, source) {
 
 async function replacePackage (dir, file, files) {
   let pkgFile = join(dir, dirname(file), 'package.json')
-  let pkg = { }
+  let pkg = {}
   if (fs.existsSync(pkgFile)) {
     pkg = JSON.parse(await readFile(pkgFile))
   }
@@ -162,7 +158,7 @@ async function replacePackage (dir, file, files) {
   }
 
   if (file === 'index.js') {
-    pkg.exports = { }
+    pkg.exports = {}
     for (let i of files) {
       let path = '.'
       if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
@@ -191,7 +187,7 @@ async function process (dir) {
       .toString()
       .split('\n')
       .filter(i => !!i)
-      .map(i => i.endsWith(sep) ? i.slice(0, -1) : i)
+      .map(i => (i.endsWith(sep) ? i.slice(0, -1) : i))
   }
 
   removePatterns.push('**/*.test.js', '**/*.spec.js')
@@ -217,10 +213,12 @@ async function process (dir) {
 
   let all = await globby(pattern, { ignore: ignorePatterns, cwd: dir })
 
-  let sources = await Promise.all(all.map(async file => {
-    let source = await readFile(join(dir, file))
-    return [file, source]
-  }))
+  let sources = await Promise.all(
+    all.map(async file => {
+      let source = await readFile(join(dir, file))
+      return [file, source]
+    })
+  )
 
   sources = sources.filter(([file, source]) => {
     if (/(^|\/|\\)index(\.browser|\.native)?\.js/.test(file)) {
@@ -229,24 +227,26 @@ async function process (dir) {
       return false
     } else {
       let fixed = file.replace(/\.js$/, sep + 'index.js')
-      throw error(`Rename ${ file } to ${ fixed }`)
+      throw error(`Rename ${file} to ${fixed}`)
     }
   })
   let files = sources.map(([file]) => file)
 
-  await Promise.all(sources.map(async ([file, source]) => {
-    if (file.endsWith('index.browser.js')) {
-      await replaceToESM(dir, file, source)
-    } else if (file.endsWith('index.native.js')) {
-      await replaceToESM(dir, file, source)
-    } else {
-      await Promise.all([
-        replaceToCJS(dir, file, source),
-        replaceToESM(dir, file, source),
-        replacePackage(dir, file, files)
-      ])
-    }
-  }))
+  await Promise.all(
+    sources.map(async ([file, source]) => {
+      if (file.endsWith('index.browser.js')) {
+        await replaceToESM(dir, file, source)
+      } else if (file.endsWith('index.native.js')) {
+        await replaceToESM(dir, file, source)
+      } else {
+        await Promise.all([
+          replaceToCJS(dir, file, source),
+          replaceToESM(dir, file, source),
+          replacePackage(dir, file, files)
+        ])
+      }
+    })
+  )
 }
 
 async function removeEmpty (dir) {

@@ -23,40 +23,46 @@ if (process.version.startsWith('v12.')) {
 }
 
 function copyDirs (...dirs) {
-  return Promise.all(dirs.map(async dir => {
-    let tmp = join(tmpdir(), `dual-publish-${ dir }-${ nanoid() }`)
-    await copy(join(__dirname, 'fixtures', dir), tmp)
-    toClean.push(tmp)
-    return tmp
-  }))
+  return Promise.all(
+    dirs.map(async dir => {
+      let tmp = join(tmpdir(), `dual-publish-${dir}-${nanoid()}`)
+      await copy(join(__dirname, 'fixtures', dir), tmp)
+      toClean.push(tmp)
+      return tmp
+    })
+  )
 }
 
 async function replaceConsole (dir) {
   let files = await globby('**/*.js', { cwd: dir, absolute: true })
-  await Promise.all(files
-    .filter(i => !i.includes('.cjs.'))
-    .map(async i => {
-      let source = await readFile(i)
-      let fixed = source.toString().replace(/'cjs /, '\'esm ')
-      await writeFile(i, fixed)
-    })
+  await Promise.all(
+    files
+      .filter(i => !i.includes('.cjs.'))
+      .map(async i => {
+        let source = await readFile(i)
+        let fixed = source.toString().replace(/'cjs /, "'esm ")
+        await writeFile(i, fixed)
+      })
   )
 }
 
 async function buildWithWebpack (path) {
   await new Promise((resolve, reject) => {
-    webpack({
-      entry: join(path),
-      output: {
-        path: dirname(path)
+    webpack(
+      {
+        entry: join(path),
+        output: {
+          path: dirname(path)
+        }
+      },
+      err => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve()
+        }
       }
-    }, err => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve()
-      }
-    })
+    )
   })
   return join(dirname(path), 'main.js')
 }
@@ -69,7 +75,7 @@ it('compiles for Node.js', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
   await replaceConsole(lib)
-  await exec(`yarn add lib@${ lib }`, { cwd: runner })
+  await exec(`yarn add lib@${lib}`, { cwd: runner })
 
   let cjs = await exec('node ' + join(runner, 'index.cjs'))
   expect(cjs.stderr).toEqual('')
@@ -92,7 +98,7 @@ it('compiles default export for Node.js', async () => {
   let [lib, runner] = await copyDirs('default-lib', 'default-runner')
   await processDir(lib)
   await replaceConsole(lib)
-  await exec(`yarn add lib@${ lib }`, { cwd: runner })
+  await exec(`yarn add lib@${lib}`, { cwd: runner })
 
   let cjs = await exec('node ' + join(runner, 'index.cjs'))
   expect(cjs.stdout).toEqual('cjs a\ncjs lib\n')
@@ -107,7 +113,7 @@ it('allows to use sub-files for Node.js', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
   await replaceConsole(lib)
-  await exec(`yarn add lib@${ lib }`, { cwd: runner })
+  await exec(`yarn add lib@${lib}`, { cwd: runner })
 
   let cjs = await exec('node ' + join(runner, 'subfile.cjs'))
   expect(cjs.stdout).toEqual('cjs a\n')
@@ -169,7 +175,7 @@ it('throws on un-processed require', async () => {
   }
   expect(err.message).toEqual(
     'Unsupported require() at index.js:2:2.\n' +
-    'ESM supports only top-level require with static path.'
+      'ESM supports only top-level require with static path.'
   )
 })
 
@@ -213,7 +219,7 @@ if (ciJob() === 1) {
     let [lib, runner] = await copyDirs('lib', 'ts-runner')
     await processDir(lib)
     await replaceConsole(lib)
-    await exec(`yarn add lib@${ lib }`, { cwd: runner })
+    await exec(`yarn add lib@${lib}`, { cwd: runner })
     await exec('npx tsc --build ' + join(runner, 'tsconfig.json'))
   })
 
@@ -221,7 +227,7 @@ if (ciJob() === 1) {
     let [lib, runner] = await copyDirs('lib', 'ts-node')
     await processDir(lib)
     await replaceConsole(lib)
-    await exec(`yarn add lib@${ lib }`, { cwd: runner })
+    await exec(`yarn add lib@${lib}`, { cwd: runner })
     let { stdout } = await exec('npx ts-node ' + join(runner, 'index.ts'))
     expect(stdout).toEqual('cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\n')
   })
@@ -231,8 +237,8 @@ if (ciJob() === 1) {
     await processDir(lib)
     await processDir(clientLib)
     await replaceConsole(lib)
-    await exec(`yarn add lib@${ lib }`, { cwd: client })
-    await exec(`yarn add client-lib@${ clientLib }`, { cwd: client })
+    await exec(`yarn add lib@${lib}`, { cwd: client })
+    await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
 
     let bundle = await buildWithWebpack(join(client, 'index.js'))
 
@@ -249,14 +255,14 @@ if (ciJob() === 1) {
     await processDir(lib)
     await processDir(clientLib)
     await replaceConsole(lib)
-    await exec(`yarn add lib@${ lib }`, { cwd: client })
-    await exec(`yarn add client-lib@${ clientLib }`, { cwd: client })
+    await exec(`yarn add lib@${lib}`, { cwd: client })
+    await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
 
     let bundle = join(client, 'bundle.js')
     await exec(
-      `npx rollup ${ join(client, 'index.js') } ` +
-      `-o ${ bundle } -f es ` +
-      '-p @rollup/plugin-node-resolve={browser:true} -p rollup-plugin-svg'
+      `npx rollup ${join(client, 'index.js')} ` +
+        `-o ${bundle} -f es ` +
+        '-p @rollup/plugin-node-resolve={browser:true} -p rollup-plugin-svg'
     )
 
     let str = (await readFile(bundle)).toString()
@@ -274,12 +280,12 @@ if (ciJob() === 1) {
     await processDir(lib)
     await processDir(clientLib)
     await replaceConsole(lib)
-    await exec(`yarn add lib@${ lib }`, { cwd: client })
-    await exec(`yarn add client-lib@${ clientLib }`, { cwd: client })
+    await exec(`yarn add lib@${lib}`, { cwd: client })
+    await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
 
     await exec(
-      `npx parcel build ${ join(client, 'index.js') } ` +
-      `-d ${ client } -o bundle.js --no-cache --experimental-scope-hoisting`
+      `npx parcel build ${join(client, 'index.js')} ` +
+        `-d ${client} -o bundle.js --no-cache --experimental-scope-hoisting`
     )
 
     let str = (await readFile(join(client, 'bundle.js'))).toString()
@@ -296,15 +302,12 @@ if (ciJob() === 1) {
     let [lib, runner] = await copyDirs('rn-lib', 'rn-runner')
     await processDir(lib)
     await replaceConsole(lib)
-    await exec(`yarn add rn-lib@${ lib }`, { cwd: runner })
+    await exec(`yarn add rn-lib@${lib}`, { cwd: runner })
 
     let config = {
-      ...await metro.loadConfig(),
+      ...(await metro.loadConfig()),
       projectRoot: runner,
-      watchFolders: [
-        runner,
-        join(__dirname, '..', 'node_modules')
-      ],
+      watchFolders: [runner, join(__dirname, '..', 'node_modules')],
       reporter: { update: () => {} },
       cacheStores: [],
       resetCache: true,
@@ -320,9 +323,9 @@ if (ciJob() === 1) {
       minify: false,
       sourceMap: false
     })
-    expect(code).toContain('console.log(\'native a\')')
-    expect(code).toContain('console.log(\'esm b\')')
-    expect(code).toContain('console.log(\'esm c\')')
+    expect(code).toContain("console.log('native a')")
+    expect(code).toContain("console.log('esm b')")
+    expect(code).toContain("console.log('esm c')")
   })
 
   it('works with require in webpack', async () => {
@@ -330,8 +333,8 @@ if (ciJob() === 1) {
     await processDir(lib)
     await processDir(clientLib)
     await replaceConsole(lib)
-    await exec(`yarn add lib@${ lib }`, { cwd: client })
-    await exec(`yarn add client-lib@${ clientLib }`, { cwd: client })
+    await exec(`yarn add lib@${lib}`, { cwd: client })
+    await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
 
     let bundle = await buildWithWebpack(join(client, 'cjs.cjs'))
 
