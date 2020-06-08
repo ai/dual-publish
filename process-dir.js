@@ -150,23 +150,6 @@ async function replacePackage (dir, file, files) {
   pkg.module = 'index.js'
   pkg['react-native'] = 'index.js'
 
-  if (file === 'index.js') {
-    pkg.exports = { }
-    for (let i of files) {
-      let path = '.'
-      if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
-      if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
-      pkg.exports[path + '/package.json'] = path + '/package.json'
-      pkg.exports[path] = {
-        require: path + '/index.cjs',
-        import: path + '/index.js'
-      }
-      if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
-        pkg.exports[path].browser = path + '/index.browser.js'
-      }
-    }
-  }
-
   if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
     pkg.browser = {
       './index.js': './index.browser.js'
@@ -175,6 +158,23 @@ async function replacePackage (dir, file, files) {
   if (files.includes(file.replace(/\.js$/, '.native.js'))) {
     pkg['react-native'] = {
       './index.js': './index.native.js'
+    }
+  }
+
+  if (file === 'index.js') {
+    pkg.exports = { }
+    for (let i of files) {
+      let path = '.'
+      if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
+      if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
+      pkg.exports[path + '/package.json'] = path + '/package.json'
+      pkg.exports[path] = {}
+      if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
+        pkg.exports[path].browser = path + '/index.browser.js'
+      }
+      pkg.exports[path].require = path + '/index.cjs'
+      pkg.exports[path].import = path + '/index.js'
+      pkg.exports[path].default = path + '/index.js'
     }
   }
 
