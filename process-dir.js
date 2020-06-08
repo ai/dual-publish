@@ -170,7 +170,6 @@ async function replacePackage (dir, file, files) {
       }
       pkg.exports[path].require = path + '/index.cjs'
       pkg.exports[path].import = path + '/index.js'
-      pkg.exports[path].default = path + '/index.js'
     }
   }
 
