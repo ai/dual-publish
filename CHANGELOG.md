@@ -1,6 +1,10 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.10.3
+* Fix `ws` require support (by Jim Pick).
+* Fix `package.exports` order.
+
 ## 0.10.2
 * Add error message on wrong export format.
 
