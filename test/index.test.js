@@ -17,6 +17,8 @@ let toClean = []
 
 afterEach(() => Promise.all(toClean.map(i => remove(i))))
 
+jest.setTimeout(10000)
+
 let esmNode = 'node '
 if (process.version.startsWith('v12.')) {
   esmNode = 'node --experimental-modules '
