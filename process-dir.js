@@ -25,7 +25,7 @@ function getPath (file, statement, ext) {
   }
   if (/\.(svg|png|css|sass)["']$/.test(path)) {
     return path
-  } else if (/^["']..?(["']$|\/)/.test(path)) {
+  } else if (/^["']\.\.?(["']$|\/)/.test(path)) {
     if (/\/index\.js(["'])$/.test(path)) {
       return path.replace(/\/index\.js(["'])$/, `/index.${ext}$1`)
     } else if (/\/["']$/.test(path)) {
