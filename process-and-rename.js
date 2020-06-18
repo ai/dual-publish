@@ -14,5 +14,5 @@ cli(async (args, print) => {
   let tmpdir = join(process.cwd(), args[0])
   await processDir(tmpdir)
   await rename(tmpdir, join(dirname(tmpdir), 'dual-publish-tmp'))
-  print('Check npm package content in ' + bold.bold('./dual-publish-tmp/'))
+  print('Check npm package content in ' + bold('./dual-publish-tmp/'))
 })
