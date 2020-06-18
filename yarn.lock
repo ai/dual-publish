@@ -2546,7 +2546,7 @@ chalk@^3.0.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
-chalk@^4.0.0, chalk@^4.1.0:
+chalk@^4.0.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.0.tgz#4e14870a618d9e2edd97dd8345fd9d9dc315646a"
   integrity sha512-qwx12AxXe2Q5xQ43Ac//I6v5aXTipYrSESdOgzrN+9XjgEpyjpKuvSGaN4qE93f7TQTlerQQ8S+EQ0EyDoVL1A==
@@ -6135,6 +6135,11 @@ kleur@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
+
+kleur@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/kleur/-/kleur-4.0.0.tgz#6da4e7a800e33eb28c53fb91902d623450a980d6"
+  integrity sha512-D8qk4wvB8ofBeLAsRNwnCkjbwdrcKYsMC/56pFQMOSfmmYJkG1O9/oBgXzD05K7biYAwnHjMI2abZ3YiuMY0Pg==
 
 lcid@^2.0.0:
   version "2.0.0"

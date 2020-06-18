@@ -1,7 +1,7 @@
-let chalk = require('chalk')
+let { bgRed } = require('kleur')
 
 function error (message) {
-  process.stderr.write(chalk.bgRed(' ERROR ') + ' ' + message + '\n')
+  process.stderr.write(bgRed(' ERROR ') + ' ' + message + '\n')
 }
 
 function print (...lines) {
