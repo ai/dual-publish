@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.10.5
+* Fix regression.
+
 ## 0.10.4
 * Reduce dependencies.
 
