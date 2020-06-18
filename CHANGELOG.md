@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.10.4
+* Reduce dependencies.
+
 ## 0.10.3
 * Fix `ws` require support (by Jim Pick).
 * Fix `package.exports` order.
