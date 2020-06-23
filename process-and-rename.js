@@ -2,7 +2,7 @@
 
 let { dirname, join } = require('path')
 let { promisify } = require('util')
-let { bold } = require('kleur')
+let { bold } = require('colorette')
 let fs = require('fs')
 
 let rename = promisify(fs.rename)

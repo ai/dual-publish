@@ -1,4 +1,4 @@
-let { bold } = require('kleur')
+let { bold } = require('colorette')
 
 let pkg = require('./package.json')
 
