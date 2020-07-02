@@ -361,13 +361,13 @@ if (ciJob() === 1) {
         \\"module\\": \\"index.js\\",
         \\"react-native\\": \\"index.js\\",
         \\"exports\\": {
-          \\"./package.json\\": \\"./package.json\\",
           \\".\\": {
             \\"require\\": \\"./index.cjs\\",
             \\"import\\": \\"./index.js\\",
             \\"style\\": \\"./index.css\\",
             \\"sass\\": \\"./dir/index.sass\\"
           },
+          \\"./package.json\\": \\"./package.json\\",
           \\"./index.css\\": \\"./index.css\\",
           \\"./dir/index.sass\\": \\"./dir/index.sass\\"
         }

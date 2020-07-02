@@ -159,12 +159,13 @@ async function replacePackage (dir, file, files) {
 
   if (file === 'index.js') {
     pkg.exports = {}
+    pkg.exports['.'] = {}
     for (let i of files) {
       let path = '.'
       if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
       if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
       pkg.exports[path + '/package.json'] = path + '/package.json'
-      pkg.exports[path] = {}
+      if (!pkg.exports[path]) pkg.exports[path] = {}
       if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
         pkg.exports[path].browser = path + '/index.browser.js'
       }
@@ -172,11 +173,10 @@ async function replacePackage (dir, file, files) {
       pkg.exports[path].import = path + '/index.js'
     }
 
-    ;['types', 'style', 'sass'].forEach(condition => {
+    for (let condition of ['types', 'style', 'sass']) {
       pkg.exports[pkg[condition]] = pkg[condition]
-      if (!pkg.exports['.']) pkg.exports['.'] = {}
       pkg.exports['.'][condition] = pkg[condition]
-    })
+    }
   }
 
   await writeFile(pkgFile, JSON.stringify(pkg, null, 2))
