@@ -344,4 +344,34 @@ if (ciJob() === 1) {
     expect(stderr).toEqual('')
     expect(stdout).toEqual('esm d\nesm a\nesm b\nesm browser c\nesm lib\n')
   })
+
+  it('copy package.json fields as a conditions for exports field', async () => {
+    let [normalizeCss] = await copyDirs('normalize-css')
+    await processDir(normalizeCss)
+
+    let packageJSON = await readFile(join(normalizeCss, 'package.json'))
+
+    expect(packageJSON.toString()).toMatchInlineSnapshot(`
+      "{
+        \\"name\\": \\"normalize-css\\",
+        \\"style\\": \\"./index.css\\",
+        \\"sass\\": \\"./dir/index.sass\\",
+        \\"type\\": \\"module\\",
+        \\"main\\": \\"index.cjs\\",
+        \\"module\\": \\"index.js\\",
+        \\"react-native\\": \\"index.js\\",
+        \\"exports\\": {
+          \\"./package.json\\": \\"./package.json\\",
+          \\".\\": {
+            \\"require\\": \\"./index.cjs\\",
+            \\"import\\": \\"./index.js\\",
+            \\"style\\": \\"./index.css\\",
+            \\"sass\\": \\"./dir/index.sass\\"
+          },
+          \\"./index.css\\": \\"./index.css\\",
+          \\"./dir/index.sass\\": \\"./dir/index.sass\\"
+        }
+      }"
+    `)
+  })
 }

@@ -171,6 +171,12 @@ async function replacePackage (dir, file, files) {
       pkg.exports[path].require = path + '/index.cjs'
       pkg.exports[path].import = path + '/index.js'
     }
+
+    ;['types', 'style', 'sass'].forEach(condition => {
+      pkg.exports[pkg[condition]] = pkg[condition]
+      if (!pkg.exports['.']) pkg.exports['.'] = {}
+      pkg.exports['.'][condition] = pkg[condition]
+    })
   }
 
   await writeFile(pkgFile, JSON.stringify(pkg, null, 2))

@@ -1,0 +1,5 @@
+{
+  "name": "normalize-css",
+  "style": "./index.css",
+  "sass": "./dir/index.sass"
+}
