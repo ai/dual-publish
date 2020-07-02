@@ -349,34 +349,32 @@ if (ciJob() === 1) {
     let [normalizeCss] = await copyDirs('normalize-css')
     await processDir(normalizeCss)
 
-    let packageJSON = await readFile(join(normalizeCss, 'package.json'))
+    let packageJSONBuffer = await readFile(join(normalizeCss, 'package.json'))
 
-    expect(packageJSON.toString()).toMatchInlineSnapshot(`
-      "{
-        \\"name\\": \\"normalize-css\\",
-        \\"style\\": \\"./index.css\\",
-        \\"styl\\": \\"./index.css\\",
-        \\"sass\\": \\"./dir/index.sass\\",
-        \\"less\\": \\"./dir/index.less\\",
-        \\"type\\": \\"module\\",
-        \\"main\\": \\"index.cjs\\",
-        \\"module\\": \\"index.js\\",
-        \\"react-native\\": \\"index.js\\",
-        \\"exports\\": {
-          \\".\\": {
-            \\"require\\": \\"./index.cjs\\",
-            \\"import\\": \\"./index.js\\",
-            \\"style\\": \\"./index.css\\",
-            \\"styl\\": \\"./index.css\\",
-            \\"sass\\": \\"./dir/index.sass\\",
-            \\"less\\": \\"./dir/index.less\\"
-          },
-          \\"./package.json\\": \\"./package.json\\",
-          \\"./index.css\\": \\"./index.css\\",
-          \\"./dir/index.sass\\": \\"./dir/index.sass\\",
-          \\"./dir/index.less\\": \\"./dir/index.less\\"
-        }
-      }"
-    `)
+    expect(JSON.parse(packageJSONBuffer.toString())).toEqual({
+      'name': 'normalize-css',
+      'style': './index.css',
+      'styl': './index.css',
+      'sass': './dir/index.sass',
+      'less': './dir/index.less',
+      'type': 'module',
+      'main': 'index.cjs',
+      'module': 'index.js',
+      'react-native': 'index.js',
+      'exports': {
+        '.': {
+          require: './index.cjs',
+          import: './index.js',
+          style: './index.css',
+          styl: './index.css',
+          sass: './dir/index.sass',
+          less: './dir/index.less'
+        },
+        './package.json': './package.json',
+        './index.css': './index.css',
+        './dir/index.sass': './dir/index.sass',
+        './dir/index.less': './dir/index.less'
+      }
+    })
   })
 }
