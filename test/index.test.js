@@ -355,7 +355,9 @@ if (ciJob() === 1) {
       "{
         \\"name\\": \\"normalize-css\\",
         \\"style\\": \\"./index.css\\",
+        \\"styl\\": \\"./index.css\\",
         \\"sass\\": \\"./dir/index.sass\\",
+        \\"less\\": \\"./dir/index.less\\",
         \\"type\\": \\"module\\",
         \\"main\\": \\"index.cjs\\",
         \\"module\\": \\"index.js\\",
@@ -365,11 +367,14 @@ if (ciJob() === 1) {
             \\"require\\": \\"./index.cjs\\",
             \\"import\\": \\"./index.js\\",
             \\"style\\": \\"./index.css\\",
-            \\"sass\\": \\"./dir/index.sass\\"
+            \\"styl\\": \\"./index.css\\",
+            \\"sass\\": \\"./dir/index.sass\\",
+            \\"less\\": \\"./dir/index.less\\"
           },
           \\"./package.json\\": \\"./package.json\\",
           \\"./index.css\\": \\"./index.css\\",
-          \\"./dir/index.sass\\": \\"./dir/index.sass\\"
+          \\"./dir/index.sass\\": \\"./dir/index.sass\\",
+          \\"./dir/index.less\\": \\"./dir/index.less\\"
         }
       }"
     `)
