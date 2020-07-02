@@ -174,8 +174,10 @@ async function replacePackage (dir, file, files) {
     }
 
     for (let condition of ['types', 'style', 'styl', 'sass', 'less']) {
-      pkg.exports[pkg[condition]] = pkg[condition]
-      pkg.exports['.'][condition] = pkg[condition]
+      if (pkg[condition]) {
+        pkg.exports[pkg[condition]] = pkg[condition]
+        pkg.exports['.'][condition] = pkg[condition]
+      }
     }
   }
 
