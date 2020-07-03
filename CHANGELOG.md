@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.11
+* Added style exports support (by Ivan Kopeykin).
+
 ## 0.10.6
 * Replace color output library.
 
