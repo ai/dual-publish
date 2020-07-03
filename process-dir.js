@@ -159,17 +159,25 @@ async function replacePackage (dir, file, files) {
 
   if (file === 'index.js') {
     pkg.exports = {}
+    pkg.exports['.'] = {}
     for (let i of files) {
       let path = '.'
       if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
       if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
       pkg.exports[path + '/package.json'] = path + '/package.json'
-      pkg.exports[path] = {}
+      if (!pkg.exports[path]) pkg.exports[path] = {}
       if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
         pkg.exports[path].browser = path + '/index.browser.js'
       }
       pkg.exports[path].require = path + '/index.cjs'
       pkg.exports[path].import = path + '/index.js'
+    }
+
+    for (let condition of ['types', 'style', 'styl', 'sass', 'less']) {
+      if (pkg[condition]) {
+        pkg.exports[pkg[condition]] = pkg[condition]
+        pkg.exports['.'][condition] = pkg[condition]
+      }
     }
   }
 
