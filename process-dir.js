@@ -173,10 +173,10 @@ async function replacePackage (dir, file, files) {
       pkg.exports[path].import = path + '/index.js'
     }
 
-    for (let condition of ['types', 'style', 'styl', 'sass', 'less']) {
-      if (pkg[condition]) {
-        pkg.exports[pkg[condition]] = pkg[condition]
-        pkg.exports['.'][condition] = pkg[condition]
+    for (let type of ['types', 'style', 'styl', 'sass', 'less']) {
+      if (pkg[type]) {
+        pkg.exports[pkg[type]] = pkg[type]
+        pkg.exports['.'][type] = pkg[type]
       }
     }
   }
