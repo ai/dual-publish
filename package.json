@@ -112,7 +112,8 @@
       "dir",
       "NanoEvents",
       "as ESM or",
-      "subfolders"
+      "subfolders",
+      "16M"
     ]
   }
 }

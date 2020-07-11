@@ -2,6 +2,7 @@
 
 Publish JS project as dual ES modules and CommonJS package to npm.
 
+* Tested on [projects] with **16M downloads per month**.
 * Works with **Node.js**, **browsers**, **React Native**,
   and **bundlers** like webpack or Parcel.
 * **No build step.** No need for separated `src/` and `dist/` dirs in repository.
@@ -55,6 +56,7 @@ import { lib } from 'https://cdn.jsdelivr.net/npm/lib/index.js'
 ```
 
 [before publishing]: https://github.com/shashkovdanil/clean-publish/
+[projects]: https://github.com/search?l=JSON&q=%22dual-publish%22&type=Code
 
 <a href="https://evilmartians.com/?utm_source=dual-publish">
   <img src="https://evilmartians.com/badges/sponsored-by-evil-martians.svg"
