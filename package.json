@@ -14,7 +14,7 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "test": "jest-ci --coverage && eslint-ci . && yaspeller-ci *.md"
+    "test": "jest --coverage && eslint . && yaspeller *.md"
   },
   "dependencies": {
     "clean-publish": "^1.1.8",
@@ -28,12 +28,11 @@
   "repository": "ai/dual-publish",
   "devDependencies": {
     "@babel/core": "^7.12.3",
-    "@logux/eslint-config": "^41.0.2",
+    "@logux/eslint-config": "^42.2.1",
     "@rollup/plugin-node-resolve": "^9.0.0",
     "ci-job-number": "^1.2.2",
-    "eslint": "^7.11.0",
-    "eslint-ci": "^1.0.0",
-    "eslint-config-standard": "^15.0.0",
+    "eslint": "^7.13.0",
+    "eslint-config-standard": "^16.0.1",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^24.1.0",
     "eslint-plugin-node": "^11.1.0",
@@ -41,24 +40,21 @@
     "eslint-plugin-prettierx": "^0.14.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-security": "^1.4.0",
-    "eslint-plugin-standard": "^4.0.2",
     "eslint-plugin-unicorn": "^23.0.0",
     "fs-extra": "^9.0.1",
     "husky": "^4.3.0",
-    "jest": "^26.6.0",
-    "jest-ci": "^0.1.1",
-    "lint-staged": "^10.4.2",
+    "jest": "^26.6.3",
+    "lint-staged": "^10.5.1",
     "metro": "^0.59.0",
     "metro-react-native-babel-transformer": "^0.59.0",
-    "nanoid": "^3.1.14",
+    "nanoid": "^3.1.16",
     "parcel": "^1.12.4",
-    "rollup": "^2.32.1",
+    "rollup": "^2.33.1",
     "rollup-plugin-svg": "^2.0.0",
     "ts-node": "^9.0.0",
-    "typescript": "^4.0.3",
+    "typescript": "^4.0.5",
     "webpack": "^4.43.0",
-    "yaspeller": "^7.0.0",
-    "yaspeller-ci": "^1.0.2"
+    "yaspeller": "^7.0.0"
   },
   "eslintConfig": {
     "extends": "@logux/eslint-config",
@@ -84,7 +80,7 @@
   },
   "lint-staged": {
     "*.md": "yaspeller",
-    "*.js": "eslint"
+    "*.js": "eslint --fix"
   },
   "husky": {
     "hooks": {
