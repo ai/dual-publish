@@ -49,22 +49,29 @@ async function replaceConsole (dir) {
 }
 
 async function buildWithWebpack (path) {
-  await new Promise((resolve, reject) => {
-    webpack(
-      {
-        entry: join(path),
-        output: {
-          path: dirname(path)
-        }
-      },
-      err => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve()
-        }
+  let bundler = webpack({
+    mode: 'production',
+    entry: join(path),
+    output: {
+      path: dirname(path)
+    },
+    resolve: {
+      fallback: {
+        path: false,
+        util: false
       }
-    )
+    }
+  })
+  await new Promise((resolve, reject) => {
+    bundler.run((err, stats) => {
+      if (err) {
+        reject(err)
+      } else if (stats.hasErrors()) {
+        reject(stats.toJson().errors[0].message)
+      } else {
+        resolve()
+      }
+    })
   })
   return join(dirname(path), 'main.js')
 }
@@ -244,12 +251,14 @@ if (ciJob() === 1) {
 
     let bundle = await buildWithWebpack(join(client, 'index.js'))
 
-    let { stdout, stderr } = await exec('node ' + bundle)
-    expect(stderr).toEqual('')
-    expect(stdout).toEqual('esm d\nesm a\nesm b\nesm browser c\nesm lib\n')
-
-    let buffer = await readFile(bundle)
-    expect(buffer.toString()).not.toContain('shaked-export')
+    let str = (await readFile(bundle)).toString()
+    expect(str).not.toContain('shaked-export')
+    expect(str).not.toContain('cjs')
+    expect(str).toContain('esm d')
+    expect(str).toContain('esm a')
+    expect(str).toContain('esm b')
+    expect(str).toContain('esm browser c')
+    expect(str).toContain('esm lib')
   })
 
   it('works with modules in Rollup', async () => {
@@ -328,21 +337,6 @@ if (ciJob() === 1) {
     expect(code).toContain("console.log('native a')")
     expect(code).toContain("console.log('esm b')")
     expect(code).toContain("console.log('esm c')")
-  })
-
-  it('works with require in webpack', async () => {
-    let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
-    await processDir(lib)
-    await processDir(clientLib)
-    await replaceConsole(lib)
-    await exec(`yarn add lib@${lib}`, { cwd: client })
-    await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
-
-    let bundle = await buildWithWebpack(join(client, 'cjs.cjs'))
-
-    let { stdout, stderr } = await exec('node ' + bundle)
-    expect(stderr).toEqual('')
-    expect(stdout).toEqual('esm d\nesm a\nesm b\nesm browser c\nesm lib\n')
   })
 
   it('copy package.json fields as a conditions for exports field', async () => {
