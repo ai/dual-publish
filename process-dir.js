@@ -117,6 +117,7 @@ async function replaceToESM (dir, file, buffer) {
   }
 
   await writeFile(join(dir, file), esm)
+  return [file, esm]
 }
 
 async function replaceToCJS (dir, file, source) {
@@ -156,17 +157,28 @@ async function replacePackage (dir, file, files) {
       './index.js': './index.native.js'
     }
   }
-
   if (file === 'index.js') {
     pkg.exports = {}
     pkg.exports['.'] = {}
     for (let i of files) {
       let path = '.'
-      if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
+      if (
+        i.endsWith('.browser.js') ||
+        i.endsWith('.native.js') ||
+        i.endsWith('.dev.js') ||
+        i.endsWith('.prod.js')
+      ) {
+        continue
+      }
       if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
       pkg.exports[path + '/package.json'] = path + '/package.json'
       if (!pkg.exports[path]) pkg.exports[path] = {}
-      if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
+      if (files.includes(i.replace(/\.js$/, '.dev.js'))) {
+        pkg.exports[path].browser = {
+          development: path + '/index.dev.js',
+          production: path + '/index.prod.js'
+        }
+      } else if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
         pkg.exports[path].browser = path + '/index.browser.js'
       }
       pkg.exports[path].require = path + '/index.cjs'
@@ -182,6 +194,41 @@ async function replacePackage (dir, file, files) {
   }
 
   await writeFile(pkgFile, JSON.stringify(pkg, null, 2))
+}
+
+function hasNodeEnvCondition (source) {
+  return /process.env.NODE_ENV\s*[!=]==\s*["']production["']/.test(source)
+}
+
+async function replaceNodeEnvConditions (dir, file, source) {
+  source = source.toString()
+  let prodCondition = /process.env.NODE_ENV\s*===\s*["']production["']/g
+  let devCondition = /process.env.NODE_ENV\s*!==\s*["']production["']/g
+  let prod = source
+    .replace(prodCondition, () => 'true')
+    .replace(devCondition, () => 'false')
+  let dev = source
+    .replace(prodCondition, () => 'false')
+    .replace(devCondition, () => 'true')
+
+  let devFile = join(dirname(file), `index.dev.js`)
+  let prodFile = join(dirname(file), `index.prod.js`)
+
+  await writeFile(join(dir, devFile), dev)
+  await writeFile(join(dir, prodFile), prod)
+  return [devFile, prodFile]
+}
+
+function findNodeEnvConditionsReplacementCandidates (sources) {
+  let browserJs = sources.filter(([file]) => file.endsWith('index.browser.js'))
+  let dirsWithBrowserJs = browserJs.map(([file]) => dirname(file))
+  let onlyIndexJs = sources.filter(
+    ([file]) =>
+      file.endsWith('index.js') && !dirsWithBrowserJs.includes(dirname(file))
+  )
+  return [...browserJs, ...onlyIndexJs]
+    .filter(([, source]) => hasNodeEnvCondition(source))
+    .map(([file]) => file)
 }
 
 async function process (dir) {
@@ -239,18 +286,34 @@ async function process (dir) {
   })
   let files = sources.map(([file]) => file)
 
+  let nodeEnvReplacementTargets = findNodeEnvConditionsReplacementCandidates(
+    sources
+  )
+
   await Promise.all(
     sources.map(async ([file, source]) => {
       if (file.endsWith('index.browser.js')) {
-        await replaceToESM(dir, file, source)
+        let [, modifiedSource] = await replaceToESM(dir, file, source)
+        if (nodeEnvReplacementTargets.includes(file)) {
+          files.push(
+            ...(await replaceNodeEnvConditions(dir, file, modifiedSource))
+          )
+        }
       } else if (file.endsWith('index.native.js')) {
         await replaceToESM(dir, file, source)
       } else {
         await Promise.all([
           replaceToCJS(dir, file, source),
-          replaceToESM(dir, file, source),
-          replacePackage(dir, file, files)
+          (async () => {
+            let [, modifiedSource] = await replaceToESM(dir, file, source)
+            if (nodeEnvReplacementTargets.includes(file)) {
+              files.push(
+                ...(await replaceNodeEnvConditions(dir, file, modifiedSource))
+              )
+            }
+          })()
         ])
+        await replacePackage(dir, file, files)
       }
     })
   )
