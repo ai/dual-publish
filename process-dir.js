@@ -217,8 +217,8 @@ async function replaceEnvConditions (dir, file, source) {
     .replace(prodCondition, () => 'false')
     .replace(devCondition, () => 'true')
 
-  let devFile = join(dirname(file), `index.dev.js`)
-  let prodFile = join(dirname(file), `index.prod.js`)
+  let devFile = join(dirname(file), 'index.dev.js')
+  let prodFile = join(dirname(file), 'index.prod.js')
 
   await writeFile(join(dir, devFile), dev)
   await writeFile(join(dir, prodFile), prod)
