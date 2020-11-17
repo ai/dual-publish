@@ -430,6 +430,30 @@ it('generates prod and dev files for files with `process.env.NODE_ENV`', async (
   expect(indexDerivedProd).toContain('if (true) {')
   expect(indexDerivedProd).toContain('if (2+3||false&& 2 + 2) {')
 
+  expect(indexDerivedProd).toContain(
+    'if (true&&false\n' +
+      '  ||\n' +
+      '  true\n' +
+      '  &&false\n' +
+      '  ||true&&false\n' +
+      ') {\n' +
+      "  console.log('dev mode')\n" +
+      '}'
+  )
+  expect(indexDerivedDev).toContain(
+    'if (false&&true\n' +
+      '  ||\n' +
+      '  false\n' +
+      '  &&true\n' +
+      '  ||false&&true\n' +
+      ') {\n' +
+      "  console.log('dev mode')\n" +
+      '}'
+  )
+
+  expect(indexDerivedDev).toContain('false||1')
+  expect(indexDerivedProd).toContain('true||1')
+
   expect(browserDerivedDev).toContain("console.log('esm browser a')")
   expect(browserDerivedDev).toContain('if (true) {')
   expect(browserDerivedProd).toContain("console.log('esm browser a')")

@@ -201,13 +201,15 @@ async function replacePackage (dir, file, files, envTargets) {
 }
 
 function hasEnvCondition (source) {
-  return /process.env.NODE_ENV\s*[!=]==\s*["']production["']/.test(source)
+  return /process.env.NODE_ENV\s*[!=]==?\s*["'`](production|development)["'`]/.test(
+    source
+  )
 }
 
 async function replaceEnvConditions (dir, file, source) {
   source = source.toString()
-  let prodCondition = /process.env.NODE_ENV\s*===\s*["']production["']/g
-  let devCondition = /process.env.NODE_ENV\s*!==\s*["']production["']/g
+  let prodCondition = /process.env.NODE_ENV\s*(===?\s*["'`]production["'`]|!==?\s*["'`]development["'`])/g
+  let devCondition = /process.env.NODE_ENV\s*(!==?\s*["'`]production["'`]|===?\s*["'`]development["'`])/g
   let prod = source
     .replace(prodCondition, () => 'true')
     .replace(devCondition, () => 'false')
