@@ -170,14 +170,7 @@ async function replacePackage (dir, file, files, envTargets) {
     pkg.exports['.'] = {}
     for (let i of files) {
       let path = '.'
-      if (
-        i.endsWith('.browser.js') ||
-        i.endsWith('.native.js') ||
-        i.endsWith('.dev.js') ||
-        i.endsWith('.prod.js')
-      ) {
-        continue
-      }
+      if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
       if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
       pkg.exports[path + '/package.json'] = path + '/package.json'
       if (!pkg.exports[path]) pkg.exports[path] = {}
