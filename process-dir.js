@@ -136,7 +136,7 @@ async function replaceToCJS (dir, file, source) {
   await writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs)
 }
 
-async function replacePackage (dir, file, files) {
+async function replacePackage (dir, file, files, nodeEnvReplacementTargets) {
   let pkgFile = join(dir, dirname(file), 'package.json')
   let pkg = {}
   if (fs.existsSync(pkgFile)) {
@@ -147,7 +147,15 @@ async function replacePackage (dir, file, files) {
   pkg.module = 'index.js'
   pkg['react-native'] = 'index.js'
 
-  if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
+  if (
+    nodeEnvReplacementTargets.includes(file) ||
+    nodeEnvReplacementTargets.includes(file.replace(/\.js$/, '.browser.js'))
+  ) {
+    pkg.browser = {
+      development: './index.dev.js',
+      production: './index.prod.js'
+    }
+  } else if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
     pkg.browser = {
       './index.js': './index.browser.js'
     }
@@ -173,7 +181,10 @@ async function replacePackage (dir, file, files) {
       if (i !== 'index.js') path += '/' + dirname(i).replace(/\\/g, '/')
       pkg.exports[path + '/package.json'] = path + '/package.json'
       if (!pkg.exports[path]) pkg.exports[path] = {}
-      if (files.includes(i.replace(/\.js$/, '.dev.js'))) {
+      if (
+        nodeEnvReplacementTargets.includes(file) ||
+        nodeEnvReplacementTargets.includes(file.replace(/\.js$/, '.browser.js'))
+      ) {
         pkg.exports[path].browser = {
           development: path + '/index.dev.js',
           production: path + '/index.prod.js'
@@ -295,9 +306,7 @@ async function process (dir) {
       if (file.endsWith('index.browser.js')) {
         let [, modifiedSource] = await replaceToESM(dir, file, source)
         if (nodeEnvReplacementTargets.includes(file)) {
-          files.push(
-            ...(await replaceNodeEnvConditions(dir, file, modifiedSource))
-          )
+          await replaceNodeEnvConditions(dir, file, modifiedSource)
         }
       } else if (file.endsWith('index.native.js')) {
         await replaceToESM(dir, file, source)
@@ -307,13 +316,11 @@ async function process (dir) {
           (async () => {
             let [, modifiedSource] = await replaceToESM(dir, file, source)
             if (nodeEnvReplacementTargets.includes(file)) {
-              files.push(
-                ...(await replaceNodeEnvConditions(dir, file, modifiedSource))
-              )
+              await replaceNodeEnvConditions(dir, file, modifiedSource)
             }
-          })()
+          })(),
+          replacePackage(dir, file, files, nodeEnvReplacementTargets)
         ])
-        await replacePackage(dir, file, files)
       }
     })
   )

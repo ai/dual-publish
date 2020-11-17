@@ -398,6 +398,21 @@ it('generates prod and dev files for files with `process.env.NODE_ENV`', async (
     import: './a/index.js'
   })
 
+  let nestedPackageJsonContent = JSON.parse(
+    (await readFile(join(nodeEnv, 'a/package.json'))).toString()
+  )
+
+  expect(nestedPackageJsonContent).toEqual({
+    'browser': {
+      production: './index.prod.js',
+      development: './index.dev.js'
+    },
+    'main': 'index.cjs',
+    'module': 'index.js',
+    'react-native': 'index.js',
+    'type': 'module'
+  })
+
   let indexDerivedProd = (
     await readFile(join(nodeEnv, 'index.prod.js'))
   ).toString()
