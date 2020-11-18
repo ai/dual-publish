@@ -461,4 +461,7 @@ it('generates prod and dev files for files with `process.env.NODE_ENV`', async (
 
   expect(browserDerivedProd).toContain("console.log('esm browser a')")
   expect(browserDerivedProd).toContain('if (false) {')
+
+  let files = await globby('**/*.browser.js', { cwd: nodeEnv })
+  expect(files).not.toContain('a/index.browser.js')
 })

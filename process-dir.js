@@ -9,6 +9,7 @@ let writeFile = promisify(fs.writeFile)
 let readFile = promisify(fs.readFile)
 let lstat = promisify(fs.lstat)
 let readdir = promisify(fs.readdir)
+let unlink = promisify(fs.unlink)
 
 const NAME = /(^|\n)(let\s+|const\s+|var\s+)(\S+|{[^}]+})\s*=/m
 
@@ -299,6 +300,7 @@ async function process (dir) {
         let [, modifiedSource] = await replaceToESM(dir, file, source)
         if (envTargets.includes(file)) {
           await replaceEnvConditions(dir, file, modifiedSource)
+          await unlink(join(dir, file))
         }
       } else if (file.endsWith('index.native.js')) {
         await replaceToESM(dir, file, source)
