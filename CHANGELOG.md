@@ -1,8 +1,11 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.1
+* Fixed `process.env.NODE_ENV` regression in webpack.
+
 ## 1.0
-* Add `process.env.NODE_ENV` support (by Aleksandr Slepchenkov).
+* Added `process.env.NODE_ENV` support (by Aleksandr Slepchenkov).
 
 ## 0.11
 * Added style exports support (by Ivan Kopeykin).
