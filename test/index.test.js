@@ -404,8 +404,7 @@ it('generates prod and dev files for files with `process.env.NODE_ENV`', async (
 
   expect(nestedPackageJsonContent).toEqual({
     'browser': {
-      production: './index.prod.js',
-      development: './index.dev.js'
+      './index.js': './index.prod.js'
     },
     'main': 'index.cjs',
     'module': 'index.js',
