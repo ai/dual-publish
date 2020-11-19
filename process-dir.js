@@ -153,8 +153,7 @@ async function replacePackage (dir, file, files, envTargets) {
     envTargets.includes(file.replace(/\.js$/, '.browser.js'))
   ) {
     pkg.browser = {
-      development: './index.dev.js',
-      production: './index.prod.js'
+      './index.js': './index.prod.js'
     }
   } else if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
     pkg.browser = {
