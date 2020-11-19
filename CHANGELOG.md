@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0
+* Add `process.env.NODE_ENV` support (by Aleksandr Slepchenkov).
+
 ## 0.11
 * Added style exports support (by Ivan Kopeykin).
 
