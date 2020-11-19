@@ -372,3 +372,96 @@ if (ciJob() === 1) {
     })
   })
 }
+
+it('generates prod and dev files for files with `process.env.NODE_ENV`', async () => {
+  let [nodeEnv] = await copyDirs('node-env')
+  await processDir(nodeEnv)
+  await replaceConsole(nodeEnv)
+  let packageJsonContent = JSON.parse(
+    (await readFile(join(nodeEnv, 'package.json'))).toString()
+  )
+  expect(packageJsonContent.exports['.']).toEqual({
+    browser: {
+      production: './index.prod.js',
+      development: './index.dev.js'
+    },
+    import: './index.js',
+    require: './index.cjs'
+  })
+
+  expect(packageJsonContent.exports['./a']).toEqual({
+    browser: {
+      production: './a/index.prod.js',
+      development: './a/index.dev.js'
+    },
+    require: './a/index.cjs',
+    import: './a/index.js'
+  })
+
+  let nestedPackageJsonContent = JSON.parse(
+    (await readFile(join(nodeEnv, 'a/package.json'))).toString()
+  )
+
+  expect(nestedPackageJsonContent).toEqual({
+    'browser': {
+      production: './index.prod.js',
+      development: './index.dev.js'
+    },
+    'main': 'index.cjs',
+    'module': 'index.js',
+    'react-native': 'index.js',
+    'type': 'module'
+  })
+
+  let indexDerivedProd = (
+    await readFile(join(nodeEnv, 'index.prod.js'))
+  ).toString()
+  let indexDerivedDev = (
+    await readFile(join(nodeEnv, 'index.dev.js'))
+  ).toString()
+  let browserDerivedProd = (
+    await readFile(join(nodeEnv, 'a/index.prod.js'))
+  ).toString()
+  let browserDerivedDev = (
+    await readFile(join(nodeEnv, 'a/index.dev.js'))
+  ).toString()
+  expect(indexDerivedDev).toContain('if (false) {')
+  expect(indexDerivedDev).toContain('if (2+3||true&& 2 + 2) {')
+  expect(indexDerivedProd).toContain('if (true) {')
+  expect(indexDerivedProd).toContain('if (2+3||false&& 2 + 2) {')
+
+  expect(indexDerivedProd).toContain(
+    'if (true&&false\n' +
+      '  ||\n' +
+      '  true\n' +
+      '  &&false\n' +
+      '  ||true&&false\n' +
+      ') {\n' +
+      "  console.log('dev mode')\n" +
+      '}'
+  )
+  expect(indexDerivedDev).toContain(
+    'if (false&&true\n' +
+      '  ||\n' +
+      '  false\n' +
+      '  &&true\n' +
+      '  ||false&&true\n' +
+      ') {\n' +
+      "  console.log('dev mode')\n" +
+      '}'
+  )
+
+  expect(indexDerivedDev).toContain('false||1')
+  expect(indexDerivedProd).toContain('true||1')
+
+  expect(browserDerivedDev).toContain("console.log('esm browser a')")
+  expect(browserDerivedDev).toContain('if (true) {')
+  expect(browserDerivedProd).toContain("console.log('esm browser a')")
+  expect(browserDerivedProd).toContain('if (false) {')
+
+  expect(browserDerivedProd).toContain("console.log('esm browser a')")
+  expect(browserDerivedProd).toContain('if (false) {')
+
+  let files = await globby('**/*.browser.js', { cwd: nodeEnv })
+  expect(files).not.toContain('a/index.browser.js')
+})
