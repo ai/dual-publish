@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.2
+* Fixed `process.env.NODE_ENV` regression in webpack 4.
+
 ## 1.0.1
 * Fixed `process.env.NODE_ENV` regression in webpack.
 
