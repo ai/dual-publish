@@ -52,7 +52,7 @@
     "rollup": "^2.33.3",
     "rollup-plugin-svg": "^2.0.0",
     "ts-node": "^9.0.0",
-    "typescript": "^4.0.5",
+    "typescript": "^4.1.2",
     "webpack": "^5.6.0",
     "yaspeller": "^7.0.0"
   },
