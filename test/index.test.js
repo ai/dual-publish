@@ -374,11 +374,11 @@ if (ciJob() === 1) {
 }
 
 it('generates prod and dev files for files with `process.env.NODE_ENV`', async () => {
-  let [nodeEnv] = await copyDirs('node-env')
-  await processDir(nodeEnv)
-  await replaceConsole(nodeEnv)
+  let [fixtureDir] = await copyDirs('node-env')
+  await processDir(fixtureDir)
+  await replaceConsole(fixtureDir)
   let packageJsonContent = JSON.parse(
-    (await readFile(join(nodeEnv, 'package.json'))).toString()
+    (await readFile(join(fixtureDir, 'package.json'))).toString()
   )
   expect(packageJsonContent.exports['.']).toEqual({
     browser: {
@@ -399,12 +399,13 @@ it('generates prod and dev files for files with `process.env.NODE_ENV`', async (
   })
 
   let nestedPackageJsonContent = JSON.parse(
-    (await readFile(join(nodeEnv, 'a/package.json'))).toString()
+    (await readFile(join(fixtureDir, 'a/package.json'))).toString()
   )
 
   expect(nestedPackageJsonContent).toEqual({
     'browser': {
-      './index.js': './index.browser.js'
+      production: './index.prod.js',
+      development: './index.dev.js'
     },
     'main': 'index.cjs',
     'module': 'index.js',
@@ -413,16 +414,10 @@ it('generates prod and dev files for files with `process.env.NODE_ENV`', async (
   })
 
   let indexDerivedProd = (
-    await readFile(join(nodeEnv, 'index.prod.js'))
+    await readFile(join(fixtureDir, 'index.prod.js'))
   ).toString()
   let indexDerivedDev = (
-    await readFile(join(nodeEnv, 'index.dev.js'))
-  ).toString()
-  let browserDerivedProd = (
-    await readFile(join(nodeEnv, 'a/index.prod.js'))
-  ).toString()
-  let browserDerivedDev = (
-    await readFile(join(nodeEnv, 'a/index.dev.js'))
+    await readFile(join(fixtureDir, 'index.dev.js'))
   ).toString()
   expect(indexDerivedDev).toContain('if (false) {')
   expect(indexDerivedDev).toContain('if (2+3||true&& 2 + 2) {')
@@ -453,11 +448,30 @@ it('generates prod and dev files for files with `process.env.NODE_ENV`', async (
   expect(indexDerivedDev).toContain('false||1')
   expect(indexDerivedProd).toContain('true||1')
 
-  expect(browserDerivedDev).toContain("console.log('esm browser a')")
-  expect(browserDerivedDev).toContain('if (true) {')
-  expect(browserDerivedProd).toContain("console.log('esm browser a')")
-  expect(browserDerivedProd).toContain('if (false) {')
+  let nestedIndexDerivedProd = (
+    await readFile(join(fixtureDir, 'a/index.prod.js'))
+  ).toString()
+  let nesteIndexDerivedDev = (
+    await readFile(join(fixtureDir, 'a/index.dev.js'))
+  ).toString()
 
-  expect(browserDerivedProd).toContain("console.log('esm browser a')")
-  expect(browserDerivedProd).toContain('if (false) {')
+  expect(nesteIndexDerivedDev).toContain('if (true) {')
+  expect(nestedIndexDerivedProd).toContain('if (false) {')
+})
+
+it("doesn't process `process.env.NODE_ENV` if index.browser.js is present", async () => {
+  let [fixtureDir] = await copyDirs('node-env-browser-js')
+  await processDir(fixtureDir)
+  await replaceConsole(fixtureDir)
+  let packageJsonContent = JSON.parse(
+    (await readFile(join(fixtureDir, 'package.json'))).toString()
+  )
+  expect(packageJsonContent.exports['.']).toEqual({
+    browser: './index.browser.js',
+    import: './index.js',
+    require: './index.cjs'
+  })
+
+  let files = await globby(['**/*.dev.js', '**/*.prod.js'], { cwd: fixtureDir })
+  expect(files).toHaveLength(0)
 })
