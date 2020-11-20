@@ -391,7 +391,7 @@ it('works with modules in Parcel', async () => {
   await exec(
     `npx parcel build ${join(client, 'index.js')} ` +
       `-d ${client} -o bundle.js --no-cache --experimental-scope-hoisting`,
-    { env: { NODE_ENV: 'production' } }
+    { env: { ...process.env, NODE_ENV: 'production' } }
   )
 
   let str = (await readFile(join(client, 'bundle.js'))).toString()
@@ -418,7 +418,7 @@ it('works with modules in developer Parcel', async () => {
   await exec(
     `npx parcel build ${join(client, 'index.js')} ` +
       `-d ${client} -o bundle.js --no-cache --experimental-scope-hoisting`,
-    { env: { NODE_ENV: 'development' } }
+    { env: { ...process.env, NODE_ENV: 'development' } }
   )
 
   let str = (await readFile(join(client, 'bundle.js'))).toString()
