@@ -7,6 +7,8 @@ let {
 } = require('./b/index.js')
 var { c: cname } = require('./c/')
 require('./d')
+if (process.env.NODE_ENV !== "production") {
+}
 
 function lib () {
   a(path.join('a', 'b'))
