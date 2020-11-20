@@ -76,10 +76,6 @@ async function buildWithWebpack (path, extra = {}) {
   return join(dirname(path), 'main.js')
 }
 
-function trimCode (stderr) {
-  return stderr.replace(/\(node:\d+\) /g, '')
-}
-
 it('compiles for Node.js', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
@@ -98,13 +94,7 @@ it('compiles for Node.js', async () => {
     let esm = await exec(esmNode + join(runner, 'index.mjs'), {
       env: { NODE_ENV: 'development' }
     })
-    if (process.version.startsWith('v12.')) {
-      expect(trimCode(esm.stderr)).toEqual(
-        'ExperimentalWarning: The ESM module loader is experimental.\n'
-      )
-    } else {
-      expect(esm.stderr).toEqual('')
-    }
+    expect(esm.stderr).toEqual('')
     expect(esm.stdout).toEqual(
       'esm d\nesm a\nesm b\nesm c\nesm lib\nesm f-dev\nesm g-node-dev\n'
     )
@@ -129,13 +119,7 @@ it('compiles for production Node.js', async () => {
     let esm = await exec(esmNode + join(runner, 'index.mjs'), {
       env: { NODE_ENV: 'development' }
     })
-    if (process.version.startsWith('v12.')) {
-      expect(trimCode(esm.stderr)).toEqual(
-        'ExperimentalWarning: The ESM module loader is experimental.\n'
-      )
-    } else {
-      expect(esm.stderr).toEqual('')
-    }
+    expect(esm.stderr).toEqual('')
     expect(esm.stdout).toEqual(
       'esm d\nesm a\nesm b\nesm c\nesm lib\nesm f-dev\nesm g-node-dev\n'
     )
