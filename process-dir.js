@@ -147,14 +147,7 @@ async function replacePackage (dir, file, files, envTargets) {
   pkg.module = 'index.js'
   pkg['react-native'] = 'index.js'
 
-  if (
-    envTargets.includes(file) ||
-    envTargets.includes(file.replace(/\.js$/, '.browser.js'))
-  ) {
-    pkg.browser = {
-      './index.js': './index.browser.js'
-    }
-  } else if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
+  if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
     pkg.browser = {
       './index.js': './index.browser.js'
     }
@@ -174,8 +167,8 @@ async function replacePackage (dir, file, files, envTargets) {
       pkg.exports[path + '/package.json'] = path + '/package.json'
       if (!pkg.exports[path]) pkg.exports[path] = {}
       if (
-        envTargets.includes(file) ||
-        envTargets.includes(file.replace(/\.js$/, '.browser.js'))
+        envTargets.includes(i) ||
+        envTargets.includes(i.replace(/\.js$/, '.browser.js'))
       ) {
         pkg.exports[path].browser = {
           development: path + '/index.dev.js',

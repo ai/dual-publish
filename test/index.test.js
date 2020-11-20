@@ -5,7 +5,6 @@ let { nanoid } = require('nanoid/non-secure')
 let { tmpdir } = require('os')
 let webpack = require('webpack')
 let globby = require('globby')
-let ciJob = require('ci-job-number')
 let metro = require('metro')
 let child = require('child_process')
 
@@ -42,13 +41,13 @@ async function replaceConsole (dir) {
       .filter(i => !i.includes('.cjs.'))
       .map(async i => {
         let source = await readFile(i)
-        let fixed = source.toString().replace(/'cjs /, "'esm ")
+        let fixed = source.toString().replace(/'cjs /g, "'esm ")
         await writeFile(i, fixed)
       })
   )
 }
 
-async function buildWithWebpack (path) {
+async function buildWithWebpack (path, extra = {}) {
   let bundler = webpack({
     mode: 'production',
     entry: join(path),
@@ -60,7 +59,8 @@ async function buildWithWebpack (path) {
         path: false,
         util: false
       }
-    }
+    },
+    ...extra
   })
   await new Promise((resolve, reject) => {
     bundler.run((err, stats) => {
@@ -86,12 +86,18 @@ it('compiles for Node.js', async () => {
   await replaceConsole(lib)
   await exec(`yarn add lib@${lib}`, { cwd: runner })
 
-  let cjs = await exec('node ' + join(runner, 'index.cjs'))
+  let cjs = await exec('node ' + join(runner, 'index.cjs'), {
+    env: { NODE_ENV: 'development' }
+  })
   expect(cjs.stderr).toEqual('')
-  expect(cjs.stdout).toEqual('cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\n')
+  expect(cjs.stdout).toEqual(
+    'cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\ncjs f-dev\ncjs g-node-dev\n'
+  )
 
   if (!process.version.startsWith('v10.')) {
-    let esm = await exec(esmNode + join(runner, 'index.mjs'))
+    let esm = await exec(esmNode + join(runner, 'index.mjs'), {
+      env: { NODE_ENV: 'development' }
+    })
     if (process.version.startsWith('v12.')) {
       expect(trimCode(esm.stderr)).toEqual(
         'ExperimentalWarning: The ESM module loader is experimental.\n'
@@ -99,7 +105,40 @@ it('compiles for Node.js', async () => {
     } else {
       expect(esm.stderr).toEqual('')
     }
-    expect(esm.stdout).toEqual('esm d\nesm a\nesm b\nesm c\nesm lib\n')
+    expect(esm.stdout).toEqual(
+      'esm d\nesm a\nesm b\nesm c\nesm lib\nesm f-dev\nesm g-node-dev\n'
+    )
+  }
+})
+
+it('compiles for production Node.js', async () => {
+  let [lib, runner] = await copyDirs('lib', 'runner')
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${lib}`, { cwd: runner })
+
+  let cjs = await exec('node ' + join(runner, 'index.cjs'), {
+    env: { NODE_ENV: 'production' }
+  })
+  expect(cjs.stderr).toEqual('')
+  expect(cjs.stdout).toEqual(
+    'cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\ncjs f-prod\ncjs g-node-prod\n'
+  )
+
+  if (!process.version.startsWith('v10.')) {
+    let esm = await exec(esmNode + join(runner, 'index.mjs'), {
+      env: { NODE_ENV: 'development' }
+    })
+    if (process.version.startsWith('v12.')) {
+      expect(trimCode(esm.stderr)).toEqual(
+        'ExperimentalWarning: The ESM module loader is experimental.\n'
+      )
+    } else {
+      expect(esm.stderr).toEqual('')
+    }
+    expect(esm.stdout).toEqual(
+      'esm d\nesm a\nesm b\nesm c\nesm lib\nesm f-dev\nesm g-node-dev\n'
+    )
   }
 })
 
@@ -223,157 +262,206 @@ it('throws on un-processed exports', async () => {
   )
 })
 
-if (ciJob() === 1) {
-  it('compiles for TypeScript', async () => {
-    let [lib, runner] = await copyDirs('lib', 'ts-runner')
-    await processDir(lib)
-    await replaceConsole(lib)
-    await exec(`yarn add lib@${lib}`, { cwd: runner })
-    await exec('npx tsc --build ' + join(runner, 'tsconfig.json'))
+it('compiles for TypeScript', async () => {
+  let [lib, runner] = await copyDirs('lib', 'ts-runner')
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${lib}`, { cwd: runner })
+  await exec('npx tsc --build ' + join(runner, 'tsconfig.json'))
+})
+
+it('works with ts-node', async () => {
+  let [lib, runner] = await copyDirs('lib', 'ts-node')
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${lib}`, { cwd: runner })
+  let { stdout } = await exec('npx ts-node ' + join(runner, 'index.ts'))
+  expect(stdout).toEqual(
+    'cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\ncjs f-dev\ncjs g-node-dev\n'
+  )
+})
+
+it('works with modules in webpack', async () => {
+  let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
+  await processDir(lib)
+  await processDir(clientLib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${lib}`, { cwd: client })
+  await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
+
+  let bundle = await buildWithWebpack(join(client, 'index.js'))
+
+  let str = (await readFile(bundle)).toString()
+  expect(str).not.toContain('shaked-export')
+  expect(str).not.toContain('cjs')
+  expect(str).toContain('esm d')
+  expect(str).toContain('esm a')
+  expect(str).toContain('esm b')
+  expect(str).toContain('esm browser c')
+  expect(str).toContain('esm lib')
+  expect(str).toContain('esm f-prod')
+  expect(str).toContain('esm g-browser-prod')
+  expect(str).not.toContain('esm f-dev')
+})
+
+it('works with modules in development webpack', async () => {
+  let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
+  await processDir(lib)
+  await processDir(clientLib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${lib}`, { cwd: client })
+  await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
+
+  let bundle = await buildWithWebpack(join(client, 'index.js'), {
+    mode: 'development'
   })
 
-  it('works with ts-node', async () => {
-    let [lib, runner] = await copyDirs('lib', 'ts-node')
-    await processDir(lib)
-    await replaceConsole(lib)
-    await exec(`yarn add lib@${lib}`, { cwd: runner })
-    let { stdout } = await exec('npx ts-node ' + join(runner, 'index.ts'))
-    expect(stdout).toEqual('cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\n')
-  })
+  let str = (await readFile(bundle)).toString()
+  expect(str).toContain('esm f-dev')
+  expect(str).toContain('esm g-browser-dev')
+  expect(str).not.toContain('esm f-prod')
+})
 
-  it('works with modules in webpack', async () => {
-    let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
-    await processDir(lib)
-    await processDir(clientLib)
-    await replaceConsole(lib)
-    await exec(`yarn add lib@${lib}`, { cwd: client })
-    await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
+it('works with modules in Rollup', async () => {
+  let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
+  await processDir(lib)
+  await processDir(clientLib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${lib}`, { cwd: client })
+  await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
 
-    let bundle = await buildWithWebpack(join(client, 'index.js'))
+  let bundle = join(client, 'bundle.js')
+  await exec(
+    `npx rollup ${join(client, 'index.js')} ` +
+      `-o ${bundle} -f es ` +
+      '-p @rollup/plugin-node-resolve={browser:true} ' +
+      '-p rollup-plugin-svg ' +
+      '-p @rollup/plugin-replace=\'{"process.env.NODE_ENV":"`production`"}\' ' +
+      '-p rollup-plugin-terser'
+  )
 
-    let str = (await readFile(bundle)).toString()
-    expect(str).not.toContain('shaked-export')
-    expect(str).not.toContain('cjs')
-    expect(str).toContain('esm d')
-    expect(str).toContain('esm a')
-    expect(str).toContain('esm b')
-    expect(str).toContain('esm browser c')
-    expect(str).toContain('esm lib')
-  })
+  let str = (await readFile(bundle)).toString()
+  expect(str).not.toContain('shaked-export')
+  expect(str).not.toContain('cjs')
+  expect(str).toContain('esm d')
+  expect(str).toContain('esm a')
+  expect(str).toContain('esm b')
+  expect(str).toContain('esm browser c')
+  expect(str).toContain('esm lib')
+  expect(str).toContain('esm f-prod')
+  expect(str).toContain('esm g-browser-prod')
+  expect(str).not.toContain('esm f-dev')
+})
 
-  it('works with modules in Rollup', async () => {
-    let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
-    await processDir(lib)
-    await processDir(clientLib)
-    await replaceConsole(lib)
-    await exec(`yarn add lib@${lib}`, { cwd: client })
-    await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
+it('works with modules in Parcel', async () => {
+  let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
+  await processDir(lib)
+  await processDir(clientLib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${lib}`, { cwd: client })
+  await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
 
-    let bundle = join(client, 'bundle.js')
-    await exec(
-      `npx rollup ${join(client, 'index.js')} ` +
-        `-o ${bundle} -f es ` +
-        '-p @rollup/plugin-node-resolve={browser:true} -p rollup-plugin-svg'
-    )
+  await exec(
+    `npx parcel build ${join(client, 'index.js')} ` +
+      `-d ${client} -o bundle.js --no-cache --experimental-scope-hoisting`,
+    { env: { NODE_ENV: 'production' } }
+  )
 
-    let str = (await readFile(bundle)).toString()
-    expect(str).not.toContain('shaked-export')
-    expect(str).not.toContain('cjs')
-    expect(str).toContain('esm d')
-    expect(str).toContain('esm a')
-    expect(str).toContain('esm b')
-    expect(str).toContain('esm browser c')
-    expect(str).toContain('esm lib')
-  })
+  let str = (await readFile(join(client, 'bundle.js'))).toString()
+  expect(str).not.toContain('shaked-export')
+  expect(str).not.toContain('cjs')
+  expect(str).toContain('esm d')
+  expect(str).toContain('esm a')
+  expect(str).toContain('esm b')
+  expect(str).toContain('esm browser c')
+  expect(str).toContain('esm lib')
+  expect(str).toContain('esm f-prod')
+  expect(str).toContain('esm g-browser-prod')
+  expect(str).not.toContain('esm f-dev')
+})
 
-  it('works with modules in Parcel', async () => {
-    let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
-    await processDir(lib)
-    await processDir(clientLib)
-    await replaceConsole(lib)
-    await exec(`yarn add lib@${lib}`, { cwd: client })
-    await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
+it('works with modules in developer Parcel', async () => {
+  let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
+  await processDir(lib)
+  await processDir(clientLib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${lib}`, { cwd: client })
+  await exec(`yarn add client-lib@${clientLib}`, { cwd: client })
 
-    await exec(
-      `npx parcel build ${join(client, 'index.js')} ` +
-        `-d ${client} -o bundle.js --no-cache --experimental-scope-hoisting`
-    )
+  await exec(
+    `npx parcel build ${join(client, 'index.js')} ` +
+      `-d ${client} -o bundle.js --no-cache --experimental-scope-hoisting`,
+    { env: { NODE_ENV: 'development' } }
+  )
 
-    let str = (await readFile(join(client, 'bundle.js'))).toString()
-    expect(str).not.toContain('shaked-export')
-    expect(str).not.toContain('cjs')
-    expect(str).toContain('esm d')
-    expect(str).toContain('esm a')
-    expect(str).toContain('esm b')
-    expect(str).toContain('esm browser c')
-    expect(str).toContain('esm lib')
-  })
+  let str = (await readFile(join(client, 'bundle.js'))).toString()
+  expect(str).toContain('esm f-dev')
+  expect(str).toContain('esm g-browser-dev')
+  expect(str).not.toContain('esm f-prod')
+})
 
-  it('compiles for React Native', async () => {
-    let [lib, runner] = await copyDirs('rn-lib', 'rn-runner')
-    await processDir(lib)
-    await replaceConsole(lib)
-    await exec(`yarn add rn-lib@${lib}`, { cwd: runner })
+it('compiles for React Native', async () => {
+  let [lib, runner] = await copyDirs('rn-lib', 'rn-runner')
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add rn-lib@${lib}`, { cwd: runner })
 
-    let config = {
-      ...(await metro.loadConfig()),
-      projectRoot: runner,
-      watchFolders: [runner, join(__dirname, '..', 'node_modules')],
-      reporter: { update: () => {} },
-      cacheStores: [],
-      resetCache: true,
-      resolver: {
-        resolverMainFields: ['react-native', 'browser', 'main']
-      },
-      transformer: {
-        babelTransformerPath: 'metro-react-native-babel-transformer'
-      }
+  let config = {
+    ...(await metro.loadConfig()),
+    projectRoot: runner,
+    watchFolders: [runner, join(__dirname, '..', 'node_modules')],
+    reporter: { update: () => {} },
+    cacheStores: [],
+    resetCache: true,
+    resolver: {
+      resolverMainFields: ['react-native', 'browser', 'main']
+    },
+    transformer: {
+      babelTransformerPath: 'metro-react-native-babel-transformer'
     }
-    let { code } = await metro.runBuild(config, {
-      entry: 'index.js',
-      minify: false,
-      sourceMap: false
-    })
-    expect(code).toContain("console.log('native a')")
-    expect(code).toContain("console.log('esm b')")
-    expect(code).toContain("console.log('esm c')")
+  }
+  let { code } = await metro.runBuild(config, {
+    entry: 'index.js',
+    minify: false,
+    sourceMap: false
   })
+  expect(code).toContain("console.log('native a')")
+  expect(code).toContain("console.log('esm b')")
+  expect(code).toContain("console.log('esm c')")
+})
 
-  it('copy package.json fields as a conditions for exports field', async () => {
-    let [normalizeCss] = await copyDirs('normalize-css')
-    await processDir(normalizeCss)
-
-    let packageJSONBuffer = await readFile(join(normalizeCss, 'package.json'))
-
-    expect(JSON.parse(packageJSONBuffer.toString())).toEqual({
-      'name': 'normalize-css',
-      'style': './index.css',
-      'styl': './index.css',
-      'sass': './dir/index.sass',
-      'less': './dir/index.less',
-      'type': 'module',
-      'main': 'index.cjs',
-      'module': 'index.js',
-      'react-native': 'index.js',
-      'exports': {
-        '.': {
-          require: './index.cjs',
-          import: './index.js',
-          style: './index.css',
-          styl: './index.css',
-          sass: './dir/index.sass',
-          less: './dir/index.less'
-        },
-        './package.json': './package.json',
-        './index.css': './index.css',
-        './dir/index.sass': './dir/index.sass',
-        './dir/index.less': './dir/index.less'
-      }
-    })
+it('copy package.json fields as a conditions for exports field', async () => {
+  let [normalizeCss] = await copyDirs('normalize-css')
+  await processDir(normalizeCss)
+  let pkg = await readFile(join(normalizeCss, 'package.json'))
+  expect(JSON.parse(pkg.toString())).toEqual({
+    'name': 'normalize-css',
+    'style': './index.css',
+    'styl': './index.css',
+    'sass': './dir/index.sass',
+    'less': './dir/index.less',
+    'type': 'module',
+    'main': 'index.cjs',
+    'module': 'index.js',
+    'react-native': 'index.js',
+    'exports': {
+      '.': {
+        require: './index.cjs',
+        import: './index.js',
+        style: './index.css',
+        styl: './index.css',
+        sass: './dir/index.sass',
+        less: './dir/index.less'
+      },
+      './package.json': './package.json',
+      './index.css': './index.css',
+      './dir/index.sass': './dir/index.sass',
+      './dir/index.less': './dir/index.less'
+    }
   })
-}
+})
 
-it('generates prod and dev files for files with `process.env.NODE_ENV`', async () => {
+it('supports process.env.NODE_ENV', async () => {
   let [nodeEnv] = await copyDirs('node-env')
   await processDir(nodeEnv)
   await replaceConsole(nodeEnv)
