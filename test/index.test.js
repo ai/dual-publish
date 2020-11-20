@@ -304,6 +304,33 @@ it('works with modules in webpack', async () => {
   expect(str).not.toContain('esm f-dev')
 })
 
+it('works with modules in esbuild', async () => {
+  let [lib, runner] = await copyDirs('lib', 'runner')
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${lib}`, { cwd: runner })
+
+  let bundle = join(runner, 'bundle.js')
+  await exec(
+    `npx esbuild --bundle ${join(runner, 'index.mjs')} ` +
+      `--minify --outfile=${bundle} ` +
+      `--define:process.env.NODE_ENV='"production"' ` +
+      `--external:path --external:util`
+  )
+
+  let str = (await readFile(bundle)).toString()
+  expect(str).not.toContain('shaked-export')
+  expect(str).not.toContain('cjs')
+  expect(str).toContain('esm d')
+  expect(str).toContain('esm a')
+  expect(str).toContain('esm b')
+  expect(str).toContain('esm browser c')
+  expect(str).toContain('esm lib')
+  expect(str).toContain('esm f-prod')
+  expect(str).toContain('esm g-browser-prod')
+  expect(str).not.toContain('esm f-dev')
+})
+
 it('works with modules in development webpack', async () => {
   let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
   await processDir(lib)
