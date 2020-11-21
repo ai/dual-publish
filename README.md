@@ -4,14 +4,16 @@ Publish JS project as dual ES modules and CommonJS package to npm.
 
 * Tested on [projects] with **16M downloads per month**.
 * Works with **Node.js**, **browsers**, **React Native**,
-  and **bundlers** like webpack or Parcel.
+  **bundlers** (webpack, Parcel, Rollup, or esbuild) and **CDNs** (like jspm).
 * **No build step.** No need for separated `src/` and `dist/` dirs in repository.
   You will be able to test branch by installing version from GitHub like
   `npm i example@you/example#fix`.
-* Keep sources **readable**.
+* Does not change **line numbers in stacktrace** and keep sources **readable**.
 * **Multiple files support**. Your user will be able to import separated files
-  like `import { nanoid } from 'nanoid/async'`.
+  <br/>like `import { nanoid } from 'nanoid/async'`.
 * **Cleans npm package** from development configs [before publishing].
+* Supports `process.env.NODE_ENV` for development checks, which you want
+  to remove in production JS bundle.
 
 You write CommonJS in your npm library sources:
 
@@ -63,6 +65,7 @@ import { lib } from 'https://cdn.jsdelivr.net/npm/lib/index.js'
       alt="Sponsored by Evil Martians" width="236" height="54">
 </a>
 
+
 ## Limits
 
 * We recommend to avoid default export because of [bug in webpack].
@@ -70,6 +73,7 @@ import { lib } from 'https://cdn.jsdelivr.net/npm/lib/index.js'
   We need it to put `package.json` with `module`.
 
 [bug in webpack]: https://github.com/webpack/webpack/issues/6584
+
 
 ## Usage
 

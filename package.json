@@ -112,7 +112,12 @@
       "NanoEvents",
       "as ESM or",
       "subfolders",
-      "16M"
+      "16M",
+      "or esbuild",
+      "CDNs",
+      "jspm",
+      "stacktrace",
+      "Rollup"
     ]
   }
 }
