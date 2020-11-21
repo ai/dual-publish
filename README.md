@@ -3,10 +3,10 @@
 Publish JS project as dual ES modules and CommonJS package to npm.
 
 * Tested on [projects] with **16M downloads per month**.
-* Works with **Node.js**, **browsers**, **React Native**,
-  **bundlers** (webpack, Parcel, Rollup, or esbuild) and **CDNs** (like jspm).
+* [CI tests] with it works with **Node.js**, **browsers**, **React Native**,
+  **bundlers** (webpack, Parcel, Rollup, or esbuild) and **CDNs** (like jspm).
 * **No build step.** No need for separated `src/` and `dist/` dirs in repository.
-  You will be able to test branch by installing version from GitHub like
+  You will be able to test branch by installing version from GitHub like
   `npm i example@you/example#fix`.
 * Does not change **line numbers in stacktrace** and keep sources **readable**.
 * **Multiple files support**. Your user will be able to import separated files
@@ -58,6 +58,7 @@ import { lib } from 'https://cdn.jsdelivr.net/npm/lib/index.js'
 ```
 
 [before publishing]: https://github.com/shashkovdanil/clean-publish/
+[CI tests]: https://github.com/ai/dual-publish/blob/master/test/index.test.js
 [projects]: https://github.com/search?l=JSON&q=%22dual-publish%22&type=Code
 
 <a href="https://evilmartians.com/?utm_source=dual-publish">
