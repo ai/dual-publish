@@ -11,7 +11,7 @@ Publish JS project as dual ES modules and CommonJS package to npm.
 * Does not change **line numbers in stacktrace** and keep sources **readable**.
 * **Multiple files support**. Your user will be able to import separated files
   <br/>like `import { nanoid } from 'nanoid/async'`.
-* **Cleans npm package** from development configs [before publishing].
+* Cleans npm package from development configs [before publishing].
 * Supports `process.env.NODE_ENV` for development checks, which you want
   to remove in production JS bundle.
 
