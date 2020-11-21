@@ -5,10 +5,10 @@ Publish JS project as dual ES modules and CommonJS package to npm.
 * Tested on [projects] with **16M downloads per month**.
 * [CI tests] with it works with **Node.js**, **browsers**, **React Native**,
   **bundlers** (webpack, Parcel, Rollup, or esbuild) and **CDNs** (like jspm).
+* Does not change **line numbers in stacktrace** and keep sources **readable**.
 * **No build step.** No need for separated `src/` and `dist/` dirs in repository.
   You will be able to test branch by installing version from GitHub like
   `npm i example@you/example#fix`.
-* Does not change **line numbers in stacktrace** and keep sources **readable**.
 * **Multiple files support**. Your user will be able to import separated files
   <br/>like `import { nanoid } from 'nanoid/async'`.
 * Cleans npm package from development configs [before publishing].
