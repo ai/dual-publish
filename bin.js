@@ -7,9 +7,9 @@ let showHelp = require('./show-help')
 let cli = require('./cli')
 
 cli(async (args, print) => {
-  if (args.some(i => i === '--help')) {
+  if (args.includes('--help')) {
     showHelp(print)
-  } else if (args.some(i => i === '--version')) {
+  } else if (args.includes('--version')) {
     showVersion(print)
   } else {
     let script = join(__dirname, 'process.js')
