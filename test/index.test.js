@@ -347,7 +347,7 @@ it('works with modules in Rollup', async () => {
       `-o ${bundle} -f es ` +
       '-p @rollup/plugin-node-resolve={browser:true} ' +
       '-p rollup-plugin-svg ' +
-      '-p @rollup/plugin-replace=\'{"process.env.NODE_ENV":"`production`"}\' ' +
+      '-p @rollup/plugin-replace=\'{"process.env.NODE_ENV":"\\"production\\""}\' ' +
       '-p rollup-plugin-terser'
   )
 
