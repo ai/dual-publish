@@ -23,7 +23,7 @@ if (process.version.startsWith('v12.')) {
   esmNode = 'node --experimental-modules '
 }
 
-function copyDirs (...dirs) {
+function copyDirs(...dirs) {
   return Promise.all(
     dirs.map(async dir => {
       let tmp = join(tmpdir(), `dual-publish-${dir}-${nanoid()}`)
@@ -34,7 +34,7 @@ function copyDirs (...dirs) {
   )
 }
 
-async function replaceConsole (dir) {
+async function replaceConsole(dir) {
   let files = await globby('**/*.js', { cwd: dir, absolute: true })
   await Promise.all(
     files
@@ -47,7 +47,7 @@ async function replaceConsole (dir) {
   )
 }
 
-async function buildWithWebpack (path, extra = {}) {
+async function buildWithWebpack(path, extra = {}) {
   let bundler = webpack({
     mode: 'production',
     entry: join(path),

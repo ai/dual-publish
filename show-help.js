@@ -1,6 +1,6 @@
 let { bold: b, yellow: y } = require('colorette')
 
-module.exports = function showHelp (print) {
+module.exports = function showHelp(print) {
   print(
     b('Usage: ') + 'npx dual-publish',
     'Convert package to dual ESM/CommonJS package, clean development configs,',

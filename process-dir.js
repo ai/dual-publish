@@ -12,13 +12,13 @@ let readdir = promisify(fs.readdir)
 
 const NAME = /(^|\n)(let\s+|const\s+|var\s+)(\S+|{[^}]+})\s*=/m
 
-function error (msg) {
+function error(msg) {
   let err = new Error(msg)
   err.own = true
   return err
 }
 
-function getPath (file, statement, ext) {
+function getPath(file, statement, ext) {
   let path = statement.match(/require\(([^)]+)\)/)[1]
   if (/\/index["']/.test(path)) {
     throw error('Replace `index` in require() to `index.js` at ' + file)
@@ -38,7 +38,7 @@ function getPath (file, statement, ext) {
   }
 }
 
-function extractPrefix (str) {
+function extractPrefix(str) {
   if (str[0] === '\n') {
     return '\n'
   } else {
@@ -46,7 +46,7 @@ function extractPrefix (str) {
   }
 }
 
-function replaceRequire (source, exported, named, nameless) {
+function replaceRequire(source, exported, named, nameless) {
   return source
     .toString()
     .replace(/(^|\n)module.exports\s*=\s*\S/g, str =>
@@ -64,7 +64,7 @@ function replaceRequire (source, exported, named, nameless) {
     )
 }
 
-async function replaceToESM (dir, file, buffer) {
+async function replaceToESM(dir, file, buffer) {
   let src = buffer.toString()
   let wrongExportIndex = src.search(/module\.exports\s*=\s*{\s*\w+:/)
   if (wrongExportIndex !== -1) {
@@ -120,7 +120,7 @@ async function replaceToESM (dir, file, buffer) {
   return [file, esm]
 }
 
-async function replaceToCJS (dir, file, source) {
+async function replaceToCJS(dir, file, source) {
   let cjs = replaceRequire(
     source,
     exported => exported,
@@ -136,7 +136,7 @@ async function replaceToCJS (dir, file, source) {
   await writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs)
 }
 
-async function replacePackage (dir, file, files, envTargets) {
+async function replacePackage(dir, file, files, envTargets) {
   let pkgFile = join(dir, dirname(file), 'package.json')
   let pkg = {}
   if (fs.existsSync(pkgFile)) {
@@ -192,13 +192,13 @@ async function replacePackage (dir, file, files, envTargets) {
   await writeFile(pkgFile, JSON.stringify(pkg, null, 2))
 }
 
-function hasEnvCondition (source) {
+function hasEnvCondition(source) {
   return /process.env.NODE_ENV\s*[!=]==?\s*["'`](production|development)["'`]/.test(
     source
   )
 }
 
-async function replaceEnvConditions (dir, file, source) {
+async function replaceEnvConditions(dir, file, source) {
   source = source.toString()
   let prodCondition = /process.env.NODE_ENV\s*(===?\s*["'`]production["'`]|!==?\s*["'`]development["'`])/g
   let devCondition = /process.env.NODE_ENV\s*(!==?\s*["'`]production["'`]|===?\s*["'`]development["'`])/g
@@ -217,7 +217,7 @@ async function replaceEnvConditions (dir, file, source) {
   return [devFile, prodFile]
 }
 
-function findEnvTargets (sources) {
+function findEnvTargets(sources) {
   let browserJs = sources.filter(([file]) => file.endsWith('index.browser.js'))
   let dirsWithBrowserJs = browserJs.map(([file]) => dirname(file))
   let onlyIndexJs = sources.filter(
@@ -229,7 +229,7 @@ function findEnvTargets (sources) {
     .map(([file]) => file)
 }
 
-async function process (dir) {
+async function process(dir) {
   let ignorePatterns = []
   let removePatterns = []
 
@@ -310,7 +310,7 @@ async function process (dir) {
   )
 }
 
-async function removeEmpty (dir) {
+async function removeEmpty(dir) {
   if (!(await lstat(dir)).isDirectory()) return
 
   let entries = await readdir(dir)
@@ -324,7 +324,7 @@ async function removeEmpty (dir) {
   }
 }
 
-module.exports = async function processDir (dir) {
+module.exports = async function processDir(dir) {
   try {
     await process(dir)
   } catch (e) {
