@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.5
+* Added `default` and `browser.default` to `package.exports`.
+
 ## 1.0.4
 * Updated `clean-publish`.
 
