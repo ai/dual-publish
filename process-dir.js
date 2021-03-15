@@ -172,13 +172,15 @@ async function replacePackage(dir, file, files, envTargets) {
       ) {
         pkg.exports[path].browser = {
           development: path + '/index.dev.js',
-          production: path + '/index.prod.js'
+          production: path + '/index.prod.js',
+          default: path + '/index.prod.js'
         }
       } else if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
         pkg.exports[path].browser = path + '/index.browser.js'
       }
       pkg.exports[path].require = path + '/index.cjs'
       pkg.exports[path].import = path + '/index.js'
+      pkg.exports[path].default = path + '/index.js'
     }
 
     for (let type of ['types', 'style', 'styl', 'sass', 'less']) {

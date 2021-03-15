@@ -16,7 +16,7 @@ let toClean = []
 
 afterEach(() => Promise.all(toClean.map(i => remove(i))))
 
-jest.setTimeout(10000)
+jest.setTimeout(15000)
 
 let esmNode = 'node '
 if (process.version.startsWith('v12.')) {
@@ -457,6 +457,7 @@ it('copy package.json fields as a conditions for exports field', async () => {
     'react-native': 'index.js',
     'exports': {
       '.': {
+        default: './index.js',
         require: './index.cjs',
         import: './index.js',
         style: './index.css',
@@ -482,19 +483,23 @@ it('supports process.env.NODE_ENV', async () => {
   expect(packageJsonContent.exports['.']).toEqual({
     browser: {
       production: './index.prod.js',
-      development: './index.dev.js'
+      development: './index.dev.js',
+      default: './index.prod.js'
     },
     import: './index.js',
-    require: './index.cjs'
+    require: './index.cjs',
+    default: './index.js'
   })
 
   expect(packageJsonContent.exports['./a']).toEqual({
     browser: {
       production: './a/index.prod.js',
-      development: './a/index.dev.js'
+      development: './a/index.dev.js',
+      default: './a/index.prod.js'
     },
     require: './a/index.cjs',
-    import: './a/index.js'
+    import: './a/index.js',
+    default: './a/index.js'
   })
 
   let nestedPackageJsonContent = JSON.parse(
