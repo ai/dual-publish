@@ -148,8 +148,12 @@ async function replacePackage(dir, file, files, envTargets) {
   pkg['react-native'] = 'index.js'
 
   if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
-    pkg.browser = {
-      './index.js': './index.browser.js'
+    if ('browser' in pkg) {
+      pkg.browser['./index.js'] = './index.browser.js'
+    } else {
+      pkg.browser = {
+        './index.js': './index.browser.js'
+      }
     }
   }
   if (files.includes(file.replace(/\.js$/, '.native.js'))) {
