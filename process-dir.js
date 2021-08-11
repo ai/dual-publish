@@ -148,13 +148,8 @@ async function replacePackage(dir, file, files, envTargets) {
   pkg['react-native'] = 'index.js'
 
   if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
-    if ('browser' in pkg) {
-      pkg.browser['./index.js'] = './index.browser.js'
-    } else {
-      pkg.browser = {
-        './index.js': './index.browser.js'
-      }
-    }
+    if (!pkg.browser) pkg.browser = {}
+    pkg.browser['./index.js'] = './index.browser.js'
   }
   if (files.includes(file.replace(/\.js$/, '.native.js'))) {
     pkg['react-native'] = {
@@ -206,8 +201,10 @@ function hasEnvCondition(source) {
 
 async function replaceEnvConditions(dir, file, source) {
   source = source.toString()
-  let prodCondition = /process.env.NODE_ENV\s*(===?\s*["'`]production["'`]|!==?\s*["'`]development["'`])/g
-  let devCondition = /process.env.NODE_ENV\s*(!==?\s*["'`]production["'`]|===?\s*["'`]development["'`])/g
+  let prodCondition =
+    /process.env.NODE_ENV\s*(===?\s*["'`]production["'`]|!==?\s*["'`]development["'`])/g
+  let devCondition =
+    /process.env.NODE_ENV\s*(!==?\s*["'`]production["'`]|===?\s*["'`]development["'`])/g
   let prod = source
     .replace(prodCondition, () => 'true')
     .replace(devCondition, () => 'false')

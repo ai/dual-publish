@@ -1,0 +1,7 @@
+{
+  "name": "browser",
+  "version": "0.0.0",
+  "browser": {
+    "./a/index.js": "./a/index.browser.js"
+  }
+}
