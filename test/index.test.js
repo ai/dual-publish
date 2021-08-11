@@ -473,6 +473,17 @@ it('copy package.json fields as a conditions for exports field', async () => {
   })
 })
 
+it('preserves existing package.json’s browser fields', async () => {
+  let [browserFields] = await copyDirs('browser-fields')
+  await processDir(browserFields)
+  let pkg = await readFile(join(browserFields, 'package.json'))
+  let packageJsonContent = JSON.parse(pkg.toString())
+  expect(packageJsonContent.browser).toEqual({
+    './index.js': './index.browser.js',
+    '123': 'hello'
+  })
+})
+
 it('supports process.env.NODE_ENV', async () => {
   let [nodeEnv] = await copyDirs('node-env')
   await processDir(nodeEnv)
