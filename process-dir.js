@@ -181,7 +181,7 @@ async function replacePackage(dir, file, files, envTargets) {
         pkg.exports[path].browser = path + '/index.browser.js'
       }
       if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
-        pkg.browser[path + '/index.cjs'] = path + '/index.cjs'
+        pkg.browser[path + '/index.cjs'] = path + '/index.browser.cjs'
       }
       pkg.exports[path].require = path + '/index.cjs'
       pkg.exports[path].import = path + '/index.js'
