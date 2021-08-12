@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.8
+* Fixed `package.json` size.
+
 ## 1.0.7
 * Fixed `browserify` support.
 
