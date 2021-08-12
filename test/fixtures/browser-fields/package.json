@@ -1,7 +1,0 @@
-{
-  "name": "browser-fields",
-  "version": "0.0.0",
-  "browser": {
-    "123": "hello"
-  }
-}

@@ -2,6 +2,7 @@ let { remove, copy, readFile, writeFile } = require('fs-extra')
 let { join, dirname } = require('path')
 let { promisify } = require('util')
 let { nanoid } = require('nanoid/non-secure')
+let browserify = require('browserify')
 let { tmpdir } = require('os')
 let webpack = require('webpack')
 let globby = require('globby')
@@ -473,17 +474,6 @@ it('copy package.json fields as a conditions for exports field', async () => {
   })
 })
 
-it('preserves existing package.json’s browser fields', async () => {
-  let [browserFields] = await copyDirs('browser-fields')
-  await processDir(browserFields)
-  let pkg = await readFile(join(browserFields, 'package.json'))
-  let packageJsonContent = JSON.parse(pkg.toString())
-  expect(packageJsonContent.browser).toEqual({
-    './index.js': './index.browser.js',
-    '123': 'hello'
-  })
-})
-
 it('supports process.env.NODE_ENV', async () => {
   let [nodeEnv] = await copyDirs('node-env')
   await processDir(nodeEnv)
@@ -519,6 +509,7 @@ it('supports process.env.NODE_ENV', async () => {
 
   expect(nestedPackageJsonContent).toEqual({
     'browser': {
+      './index.cjs': './index.browser.cjs',
       './index.js': './index.browser.js'
     },
     'main': 'index.cjs',
@@ -575,4 +566,32 @@ it('supports process.env.NODE_ENV', async () => {
 
   expect(browserDerivedProd).toContain("console.log('esm browser a')")
   expect(browserDerivedProd).toContain('if (false) {')
+})
+
+it('supports Browserify', async () => {
+  let [lib, client] = await copyDirs('lib', 'client-cjs')
+
+  await processDir(lib)
+  await replaceConsole(lib)
+  await exec(`yarn add lib@${lib}`, { cwd: client })
+
+  let b = browserify(join(client, 'index.js'))
+  let str = await new Promise((resolve, reject) => {
+    b.bundle((err, src) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(src)
+      }
+    })
+  })
+  let runner = join(client, 'runner.js')
+  await writeFile(runner, str)
+
+  let cjs = await exec('node ' + runner)
+  expect(cjs.stderr).toEqual('')
+  expect(cjs.stdout).toEqual(
+    'cjs d\ncjs a\ncjs b\ncjs browser c\n' +
+      'cjs lib\ncjs f-dev\ncjs g-browser-dev\n'
+  )
 })

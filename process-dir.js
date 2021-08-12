@@ -150,6 +150,7 @@ async function replacePackage(dir, file, files, envTargets) {
   if (files.includes(file.replace(/\.js$/, '.browser.js'))) {
     if (!pkg.browser) pkg.browser = {}
     pkg.browser['./index.js'] = './index.browser.js'
+    pkg.browser['./index.cjs'] = './index.browser.cjs'
   }
   if (files.includes(file.replace(/\.js$/, '.native.js'))) {
     pkg['react-native'] = {
@@ -157,6 +158,8 @@ async function replacePackage(dir, file, files, envTargets) {
     }
   }
   if (file === 'index.js') {
+    if (!pkg.browser) pkg.browser = {}
+
     pkg.exports = {}
     pkg.exports['.'] = {}
     for (let i of files) {
@@ -177,6 +180,9 @@ async function replacePackage(dir, file, files, envTargets) {
       } else if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
         pkg.exports[path].browser = path + '/index.browser.js'
       }
+      if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
+        pkg.browser[path + '/index.cjs'] = path + '/index.cjs'
+      }
       pkg.exports[path].require = path + '/index.cjs'
       pkg.exports[path].import = path + '/index.js'
       pkg.exports[path].default = path + '/index.js'
@@ -188,6 +194,8 @@ async function replacePackage(dir, file, files, envTargets) {
         pkg.exports['.'][type] = pkg[type]
       }
     }
+
+    if (Object.keys(pkg.browser).length === 0) delete pkg.browser
   }
 
   await writeFile(pkgFile, JSON.stringify(pkg, null, 2))
@@ -291,10 +299,15 @@ async function process(dir) {
   await Promise.all(
     sources.map(async ([file, source]) => {
       if (file.endsWith('index.browser.js')) {
-        let [, modifiedSource] = await replaceToESM(dir, file, source)
-        if (envTargets.includes(file)) {
-          await replaceEnvConditions(dir, file, modifiedSource)
-        }
+        await Promise.all([
+          replaceToCJS(dir, file, source),
+          (async () => {
+            let [, modifiedSource] = await replaceToESM(dir, file, source)
+            if (envTargets.includes(file)) {
+              await replaceEnvConditions(dir, file, modifiedSource)
+            }
+          })()
+        ])
       } else if (file.endsWith('index.native.js')) {
         await replaceToESM(dir, file, source)
       } else {
