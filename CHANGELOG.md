@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.7
+* Fixed `browserify` support.
+
 ## 1.0.6
 * Fixed `package.browser` overriding (by Artur Paikin).
 
