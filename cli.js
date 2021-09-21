@@ -1,4 +1,4 @@
-let { bgRed } = require('colorette')
+let { bgRed } = require('nanocolors')
 
 function error(message) {
   process.stderr.write(bgRed(' ERROR ') + ' ' + message + '\n')

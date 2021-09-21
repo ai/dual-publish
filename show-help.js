@@ -1,4 +1,4 @@
-let { bold: b, yellow: y } = require('colorette')
+let { bold: b, yellow: y } = require('nanocolors')
 
 module.exports = function showHelp(print) {
   print(
