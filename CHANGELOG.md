@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.10
+* Updated `clean-publish`.
+
 ## 1.0.9
 * Replaced `colorette` with `nanocolors`.
 
