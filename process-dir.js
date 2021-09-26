@@ -1,6 +1,5 @@
-import { writeFile, readFile, lstat, readdir } from 'fs/promises'
+import { promises as fs, existsSync } from 'fs'
 import { dirname, join, sep } from 'path'
-import { existsSync } from 'fs'
 import { promisify } from 'util'
 import lineColumn from 'line-column'
 import rimrafCb from 'rimraf'
@@ -114,7 +113,7 @@ async function replaceToESM(dir, file, buffer) {
     )
   }
 
-  await writeFile(join(dir, file), esm)
+  await fs.writeFile(join(dir, file), esm)
   return [file, esm]
 }
 
@@ -131,14 +130,14 @@ async function replaceToCJS(dir, file, source) {
       return `${prefix}require(${path})`
     }
   )
-  await writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs)
+  await fs.writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs)
 }
 
 async function replacePackage(dir, file, files, envTargets) {
   let pkgFile = join(dir, dirname(file), 'package.json')
   let pkg = {}
   if (existsSync(pkgFile)) {
-    pkg = JSON.parse(await readFile(pkgFile))
+    pkg = JSON.parse(await fs.readFile(pkgFile))
   }
   pkg.type = 'module'
   pkg.main = 'index.cjs'
@@ -193,7 +192,7 @@ async function replacePackage(dir, file, files, envTargets) {
     if (Object.keys(pkg.browser).length === 0) delete pkg.browser
   }
 
-  await writeFile(pkgFile, JSON.stringify(pkg, null, 2))
+  await fs.writeFile(pkgFile, JSON.stringify(pkg, null, 2))
 }
 
 function hasEnvCondition(source) {
@@ -218,8 +217,8 @@ async function replaceEnvConditions(dir, file, source) {
   let devFile = join(dirname(file), 'index.dev.js')
   let prodFile = join(dirname(file), 'index.prod.js')
 
-  await writeFile(join(dir, devFile), dev)
-  await writeFile(join(dir, prodFile), prod)
+  await fs.writeFile(join(dir, devFile), dev)
+  await fs.writeFile(join(dir, prodFile), prod)
   return [devFile, prodFile]
 }
 
@@ -241,7 +240,7 @@ async function process(dir) {
 
   let npmignorePath = join(dir, '.npmignore')
   if (existsSync(npmignorePath)) {
-    removePatterns = (await readFile(npmignorePath))
+    removePatterns = (await fs.readFile(npmignorePath))
       .toString()
       .split('\n')
       .filter(i => !!i)
@@ -258,7 +257,7 @@ async function process(dir) {
 
   let pkgPath = join(dir, 'package.json')
   if (existsSync(pkgPath)) {
-    let pkg = JSON.parse(await readFile(pkgPath))
+    let pkg = JSON.parse(await fs.readFile(pkgPath))
     if (pkg.files) {
       pattern = pkg.files
     }
@@ -273,7 +272,7 @@ async function process(dir) {
 
   let sources = await Promise.all(
     all.map(async file => {
-      let source = await readFile(join(dir, file))
+      let source = await fs.readFile(join(dir, file))
       return [file, source]
     })
   )
@@ -322,12 +321,12 @@ async function process(dir) {
 }
 
 async function removeEmpty(dir) {
-  if (!(await lstat(dir)).isDirectory()) return
+  if (!(await fs.lstat(dir)).isDirectory()) return
 
-  let entries = await readdir(dir)
+  let entries = await fs.readdir(dir)
   if (entries.length > 0) {
     await Promise.all(entries.map(i => removeEmpty(join(dir, i))))
-    entries = await readdir(dir)
+    entries = await fs.readdir(dir)
   }
 
   if (entries.length === 0) {
