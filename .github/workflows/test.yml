@@ -39,4 +39,4 @@ jobs:
         with:
           install-command: yarn install --ignore-engines
       - name: Run unit tests
-        run: npx jest
+        run: node --experimental-vm-modules node_modules/.bin/jest

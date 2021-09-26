@@ -1,6 +1,6 @@
-let { bold: b, yellow: y } = require('nanocolors')
+import { yellow as y, bold as b } from 'nanocolors'
 
-module.exports = function showHelp(print) {
+export function showHelp(print) {
   print(
     b('Usage: ') + 'npx dual-publish',
     'Convert package to dual ESM/CommonJS package, clean development configs,',

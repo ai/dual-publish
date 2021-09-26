@@ -1,14 +1,12 @@
-let { dirname, join, sep } = require('path')
-let { promisify } = require('util')
-let lineColumn = require('line-column')
-let globby = require('globby')
-let rimraf = promisify(require('rimraf'))
-let fs = require('fs')
+import { writeFile, readFile, lstat, readdir } from 'fs/promises'
+import { dirname, join, sep } from 'path'
+import { existsSync } from 'fs'
+import { promisify } from 'util'
+import lineColumn from 'line-column'
+import rimrafCb from 'rimraf'
+import globby from 'globby'
 
-let writeFile = promisify(fs.writeFile)
-let readFile = promisify(fs.readFile)
-let lstat = promisify(fs.lstat)
-let readdir = promisify(fs.readdir)
+let rimraf = promisify(rimrafCb)
 
 const NAME = /(^|\n)(let\s+|const\s+|var\s+)(\S+|{[^}]+})\s*=/m
 
@@ -139,7 +137,7 @@ async function replaceToCJS(dir, file, source) {
 async function replacePackage(dir, file, files, envTargets) {
   let pkgFile = join(dir, dirname(file), 'package.json')
   let pkg = {}
-  if (fs.existsSync(pkgFile)) {
+  if (existsSync(pkgFile)) {
     pkg = JSON.parse(await readFile(pkgFile))
   }
   pkg.type = 'module'
@@ -242,7 +240,7 @@ async function process(dir) {
   let removePatterns = []
 
   let npmignorePath = join(dir, '.npmignore')
-  if (fs.existsSync(npmignorePath)) {
+  if (existsSync(npmignorePath)) {
     removePatterns = (await readFile(npmignorePath))
       .toString()
       .split('\n')
@@ -259,7 +257,7 @@ async function process(dir) {
   let pattern = '**/*.js'
 
   let pkgPath = join(dir, 'package.json')
-  if (fs.existsSync(pkgPath)) {
+  if (existsSync(pkgPath)) {
     let pkg = JSON.parse(await readFile(pkgPath))
     if (pkg.files) {
       pattern = pkg.files
@@ -337,7 +335,7 @@ async function removeEmpty(dir) {
   }
 }
 
-module.exports = async function processDir(dir) {
+export async function processDir(dir) {
   try {
     await process(dir)
   } catch (e) {

@@ -1,4 +1,4 @@
-let { bgRed } = require('nanocolors')
+import { bgRed } from 'nanocolors'
 
 function error(message) {
   process.stderr.write(bgRed(' ERROR ') + ' ' + message + '\n')
@@ -8,7 +8,7 @@ function print(...lines) {
   process.stdout.write(lines.join('\n') + '\n')
 }
 
-module.exports = async function cli(cb) {
+export async function cli(cb) {
   try {
     await cb(process.argv.slice(2), print, error)
   } catch (e) {

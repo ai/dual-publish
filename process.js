@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-let { join } = require('path')
+import { join } from 'path'
 
-let processDir = require('./process-dir')
-let cli = require('./cli')
+import { processDir } from './process-dir.js'
+import { cli } from './cli.js'
 
 cli(args => processDir(join(process.cwd(), args[0])))

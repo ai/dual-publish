@@ -1,21 +1,23 @@
-let { remove, copy, readFile, writeFile } = require('fs-extra')
-let { join, dirname } = require('path')
-let { promisify } = require('util')
-let { nanoid } = require('nanoid/non-secure')
-let browserify = require('browserify')
-let { tmpdir } = require('os')
-let webpack = require('webpack')
-let globby = require('globby')
-let metro = require('metro')
-let child = require('child_process')
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import { promisify } from 'util'
+import { nanoid } from 'nanoid/non-secure'
+import browserify from 'browserify'
+import { tmpdir } from 'os'
+import { jest } from '@jest/globals'
+import webpack from 'webpack'
+import globby from 'globby'
+import metro from 'metro'
+import child from 'child_process'
+import fse from 'fs-extra'
 
-let processDir = require('../process-dir')
+import { processDir } from '../process-dir.js'
 
 let exec = promisify(child.exec)
 
 let toClean = []
 
-afterEach(() => Promise.all(toClean.map(i => remove(i))))
+afterEach(() => Promise.all(toClean.map(i => fse.remove(i))))
 
 jest.setTimeout(15000)
 
@@ -24,11 +26,13 @@ if (process.version.startsWith('v12.')) {
   esmNode = 'node --experimental-modules '
 }
 
+let testRoot = dirname(fileURLToPath(import.meta.url))
+
 function copyDirs(...dirs) {
   return Promise.all(
     dirs.map(async dir => {
       let tmp = join(tmpdir(), `dual-publish-${dir}-${nanoid()}`)
-      await copy(join(__dirname, 'fixtures', dir), tmp)
+      await fse.copy(join(testRoot, 'fixtures', dir), tmp)
       toClean.push(tmp)
       return tmp
     })
@@ -41,9 +45,9 @@ async function replaceConsole(dir) {
     files
       .filter(i => !i.includes('.cjs.'))
       .map(async i => {
-        let source = await readFile(i)
+        let source = await fse.readFile(i)
         let fixed = source.toString().replace(/'cjs /g, "'esm ")
-        await writeFile(i, fixed)
+        await fse.writeFile(i, fixed)
       })
   )
 }
@@ -276,7 +280,7 @@ it('works with modules in webpack', async () => {
 
   let bundle = await buildWithWebpack(join(client, 'index.js'))
 
-  let str = (await readFile(bundle)).toString()
+  let str = (await fse.readFile(bundle)).toString()
   expect(str).not.toContain('shaked-export')
   expect(str).not.toContain('cjs')
   expect(str).toContain('esm d')
@@ -303,7 +307,7 @@ it('works with modules in esbuild', async () => {
       `--external:path --external:util`
   )
 
-  let str = (await readFile(bundle)).toString()
+  let str = (await fse.readFile(bundle)).toString()
   expect(str).not.toContain('shaked-export')
   expect(str).not.toContain('cjs')
   expect(str).toContain('esm d')
@@ -328,7 +332,7 @@ it('works with modules in development webpack', async () => {
     mode: 'development'
   })
 
-  let str = (await readFile(bundle)).toString()
+  let str = (await fse.readFile(bundle)).toString()
   expect(str).toContain('esm f-dev')
   expect(str).toContain('esm g-browser-dev')
   expect(str).not.toContain('esm f-prod')
@@ -352,7 +356,7 @@ it('works with modules in Rollup', async () => {
       '-p rollup-plugin-terser'
   )
 
-  let str = (await readFile(bundle)).toString()
+  let str = (await fse.readFile(bundle)).toString()
   expect(str).not.toContain('shaked-export')
   expect(str).not.toContain('cjs')
   expect(str).toContain('esm d')
@@ -379,7 +383,7 @@ it('works with modules in Parcel', async () => {
     { env: { ...process.env, NODE_ENV: 'production' } }
   )
 
-  let str = (await readFile(join(client, 'bundle.js'))).toString()
+  let str = (await fse.readFile(join(client, 'bundle.js'))).toString()
   expect(str).not.toContain('shaked-export')
   expect(str).not.toContain('cjs')
   expect(str).toContain('esm d')
@@ -406,7 +410,7 @@ it('works with modules in developer Parcel', async () => {
     { env: { ...process.env, NODE_ENV: 'development' } }
   )
 
-  let str = (await readFile(join(client, 'bundle.js'))).toString()
+  let str = (await fse.readFile(join(client, 'bundle.js'))).toString()
   expect(str).toContain('esm f-dev')
   expect(str).toContain('esm g-browser-dev')
   expect(str).not.toContain('esm f-prod')
@@ -421,7 +425,7 @@ it('compiles for React Native', async () => {
   let config = {
     ...(await metro.loadConfig()),
     projectRoot: runner,
-    watchFolders: [runner, join(__dirname, '..', 'node_modules')],
+    watchFolders: [runner, join(testRoot, '..', 'node_modules')],
     reporter: { update: () => {} },
     cacheStores: [],
     resetCache: true,
@@ -445,7 +449,7 @@ it('compiles for React Native', async () => {
 it('copy package.json fields as a conditions for exports field', async () => {
   let [normalizeCss] = await copyDirs('normalize-css')
   await processDir(normalizeCss)
-  let pkg = await readFile(join(normalizeCss, 'package.json'))
+  let pkg = await fse.readFile(join(normalizeCss, 'package.json'))
   expect(JSON.parse(pkg.toString())).toEqual({
     'name': 'normalize-css',
     'style': './index.css',
@@ -479,7 +483,7 @@ it('supports process.env.NODE_ENV', async () => {
   await processDir(nodeEnv)
   await replaceConsole(nodeEnv)
   let packageJsonContent = JSON.parse(
-    (await readFile(join(nodeEnv, 'package.json'))).toString()
+    (await fse.readFile(join(nodeEnv, 'package.json'))).toString()
   )
   expect(packageJsonContent.exports['.']).toEqual({
     browser: {
@@ -504,7 +508,7 @@ it('supports process.env.NODE_ENV', async () => {
   })
 
   let nestedPackageJsonContent = JSON.parse(
-    (await readFile(join(nodeEnv, 'a/package.json'))).toString()
+    (await fse.readFile(join(nodeEnv, 'a/package.json'))).toString()
   )
 
   expect(nestedPackageJsonContent).toEqual({
@@ -519,16 +523,16 @@ it('supports process.env.NODE_ENV', async () => {
   })
 
   let indexDerivedProd = (
-    await readFile(join(nodeEnv, 'index.prod.js'))
+    await fse.readFile(join(nodeEnv, 'index.prod.js'))
   ).toString()
   let indexDerivedDev = (
-    await readFile(join(nodeEnv, 'index.dev.js'))
+    await fse.readFile(join(nodeEnv, 'index.dev.js'))
   ).toString()
   let browserDerivedProd = (
-    await readFile(join(nodeEnv, 'a/index.prod.js'))
+    await fse.readFile(join(nodeEnv, 'a/index.prod.js'))
   ).toString()
   let browserDerivedDev = (
-    await readFile(join(nodeEnv, 'a/index.dev.js'))
+    await fse.readFile(join(nodeEnv, 'a/index.dev.js'))
   ).toString()
   expect(indexDerivedDev).toContain('if (false) {')
   expect(indexDerivedDev).toContain('if (2+3||true&& 2 + 2) {')
@@ -586,7 +590,7 @@ it('supports Browserify', async () => {
     })
   })
   let runner = join(client, 'runner.js')
-  await writeFile(runner, str)
+  await fse.writeFile(runner, str)
 
   let cjs = await exec('node ' + runner)
   expect(cjs.stderr).toEqual('')

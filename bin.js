@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
-let { join } = require('path')
+import { fileURLToPath } from 'url'
+import { join } from 'path'
 
-let showVersion = require('./show-version')
-let showHelp = require('./show-help')
-let cli = require('./cli')
+import { showVersion } from './show-version.js'
+import { showHelp } from './show-help.js'
+import { cli } from './cli.js'
+
+let dirname = join(fileURLToPath(import.meta.url), '..')
 
 cli(async (args, print) => {
   if (args.includes('--help')) {
@@ -12,14 +15,14 @@ cli(async (args, print) => {
   } else if (args.includes('--version')) {
     showVersion(print)
   } else {
-    let script = join(__dirname, 'process.js')
+    let script = join(dirname, 'process.js')
     if (args.includes('--check')) {
       process.argv.push('--without-publish')
-      script = join(__dirname, 'process-and-rename.js')
+      script = join(dirname, 'process-and-rename.js')
     } else if (args.includes('--without-publish')) {
-      script = join(__dirname, 'process-and-rename.js')
+      script = join(dirname, 'process-and-rename.js')
     }
     process.argv.push('--before-script', script)
-    require('clean-publish/clean-publish')
+    await import('clean-publish/clean-publish.js')
   }
 })

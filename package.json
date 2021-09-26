@@ -9,12 +9,13 @@
     "publish",
     "npm"
   ],
+  "type": "module",
   "bin": "./bin.js",
   "engines": {
     "node": ">=10.0.0"
   },
   "scripts": {
-    "test": "jest --coverage && eslint . && yaspeller *.md"
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage && eslint . && yaspeller *.md"
   },
   "dependencies": {
     "clean-publish": "^3.0.1",

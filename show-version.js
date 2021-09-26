@@ -1,7 +1,11 @@
-let { bold } = require('nanocolors')
+import { fileURLToPath } from 'url'
+import { readFileSync } from 'fs'
+import { bold } from 'nanocolors'
+import { join } from 'path'
 
-let pkg = require('./package.json')
-
-module.exports = function showVersion(print) {
+export function showVersion(print) {
+  let pkg = readFileSync(
+    join(fileURLToPath(import.meta.url), '..', 'package.json')
+  )
   print(`dual-publish ${bold(pkg.version)}`)
 }

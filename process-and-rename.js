@@ -1,14 +1,11 @@
 #!/usr/bin/env node
 
-let { dirname, join } = require('path')
-let { promisify } = require('util')
-let { bold } = require('nanocolors')
-let fs = require('fs')
+import { dirname, join } from 'path'
+import { rename } from 'fs/promises'
+import { bold } from 'nanocolors'
 
-let rename = promisify(fs.rename)
-
-let processDir = require('./process-dir')
-let cli = require('./cli')
+import { processDir } from './process-dir.js'
+import { cli } from './cli.js'
 
 cli(async (args, print) => {
   let tmpdir = join(process.cwd(), args[0])
