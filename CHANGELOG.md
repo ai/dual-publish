@@ -1,7 +1,8 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## 1.0.10
+## 2.0
+* Removed Node.js 10 support.
 * Updated `clean-publish`.
 
 ## 1.0.9
