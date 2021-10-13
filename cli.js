@@ -1,7 +1,7 @@
-import { bgRed } from 'nanocolors'
+import pico from 'picocolors'
 
 function error(message) {
-  process.stderr.write(bgRed(' ERROR ') + ' ' + message + '\n')
+  process.stderr.write(pico.bgRed(' ERROR ') + ' ' + message + '\n')
 }
 
 function print(...lines) {

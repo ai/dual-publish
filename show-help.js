@@ -1,4 +1,7 @@
-import { yellow as y, bold as b } from 'nanocolors'
+import pico from 'picocolors'
+
+let b = pico.bold
+let y = pico.y
 
 export function showHelp(print) {
   print(
