@@ -90,8 +90,8 @@ it('compiles for Node.js', async () => {
   let cjs = await exec('node ' + join(runner, 'index.cjs'), {
     env: { NODE_ENV: 'development' }
   })
-  expect(cjs.stderr).toEqual('')
-  expect(cjs.stdout).toEqual(
+  expect(cjs.stderr).toBe('')
+  expect(cjs.stdout).toBe(
     'cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\ncjs f-dev\ncjs g-node-dev\n'
   )
 
@@ -99,8 +99,8 @@ it('compiles for Node.js', async () => {
     let esm = await exec(esmNode + join(runner, 'index.mjs'), {
       env: { NODE_ENV: 'development' }
     })
-    expect(esm.stderr).toEqual('')
-    expect(esm.stdout).toEqual(
+    expect(esm.stderr).toBe('')
+    expect(esm.stdout).toBe(
       'esm d\nesm a\nesm b\nesm c\nesm lib\nesm f-dev\nesm g-node-dev\n'
     )
   }
@@ -115,8 +115,8 @@ it('compiles for production Node.js', async () => {
   let cjs = await exec('node ' + join(runner, 'index.cjs'), {
     env: { NODE_ENV: 'production' }
   })
-  expect(cjs.stderr).toEqual('')
-  expect(cjs.stdout).toEqual(
+  expect(cjs.stderr).toBe('')
+  expect(cjs.stdout).toBe(
     'cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\ncjs f-prod\ncjs g-node-prod\n'
   )
 
@@ -124,8 +124,8 @@ it('compiles for production Node.js', async () => {
     let esm = await exec(esmNode + join(runner, 'index.mjs'), {
       env: { NODE_ENV: 'development' }
     })
-    expect(esm.stderr).toEqual('')
-    expect(esm.stdout).toEqual(
+    expect(esm.stderr).toBe('')
+    expect(esm.stdout).toBe(
       'esm d\nesm a\nesm b\nesm c\nesm lib\nesm f-dev\nesm g-node-dev\n'
     )
   }
@@ -138,11 +138,11 @@ it('compiles default export for Node.js', async () => {
   await exec(`yarn add lib@${lib}`, { cwd: runner })
 
   let cjs = await exec('node ' + join(runner, 'index.cjs'))
-  expect(cjs.stdout).toEqual('cjs a\ncjs lib\n')
+  expect(cjs.stdout).toBe('cjs a\ncjs lib\n')
 
   if (!process.version.startsWith('v10.')) {
     let esm = await exec(esmNode + join(runner, 'index.mjs'))
-    expect(esm.stdout).toEqual('esm a\nesm lib\n')
+    expect(esm.stdout).toBe('esm a\nesm lib\n')
   }
 })
 
@@ -153,11 +153,11 @@ it('allows to use sub-files for Node.js', async () => {
   await exec(`yarn add lib@${lib}`, { cwd: runner })
 
   let cjs = await exec('node ' + join(runner, 'subfile.cjs'))
-  expect(cjs.stdout).toEqual('cjs a\n')
+  expect(cjs.stdout).toBe('cjs a\n')
 
   if (!process.version.startsWith('v10.')) {
     let esm = await exec(esmNode + join(runner, 'subfile.mjs'))
-    expect(esm.stdout).toEqual('esm a\n')
+    expect(esm.stdout).toBe('esm a\n')
   }
 })
 
@@ -186,7 +186,7 @@ it('throws on non-index file', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toEqual('Rename file.js to file/index.js')
+  expect(err.message).toBe('Rename file.js to file/index.js')
 })
 
 it('throws on index require without .js', async () => {
@@ -197,7 +197,7 @@ it('throws on index require without .js', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toEqual(
+  expect(err.message).toBe(
     'Replace `index` in require() to `index.js` at index.js'
   )
 })
@@ -246,7 +246,7 @@ it('throws on un-processed exports', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toEqual(
+  expect(err.message).toBe(
     'Replace module.exports.x to module.exports = { x } at index.js:1:1'
   )
 })
@@ -265,7 +265,7 @@ it('works with ts-node', async () => {
   await replaceConsole(lib)
   await exec(`yarn add lib@${lib}`, { cwd: runner })
   let { stdout } = await exec('npx ts-node ' + join(runner, 'index.ts'))
-  expect(stdout).toEqual(
+  expect(stdout).toBe(
     'cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\ncjs f-dev\ncjs g-node-dev\n'
   )
 })
@@ -593,7 +593,7 @@ it('supports Browserify', async () => {
   await fse.writeFile(runner, str)
 
   let cjs = await exec('node ' + runner)
-  expect(cjs.stderr).toEqual('')
+  expect(cjs.stderr).toBe('')
   expect(cjs.stdout).toEqual(
     'cjs d\ncjs a\ncjs b\ncjs browser c\n' +
       'cjs lib\ncjs f-dev\ncjs g-browser-dev\n'
