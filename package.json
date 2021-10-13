@@ -101,6 +101,9 @@
     "singleQuote": true,
     "trailingComma": "none"
   },
+  "clean-publish": {
+    "cleanDocs": true
+  },
   "yaspeller": {
     "lang": "en",
     "ignoreCapitalization": true,
