@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.0.2
+* Fixed `--help` error.
+
 ## 2.0.1
 * Replaced `nanocolors` with `picocolors`.
 
