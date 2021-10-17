@@ -1,7 +1,7 @@
 import pico from 'picocolors'
 
 let b = pico.bold
-let y = pico.y
+let y = pico.yellow
 
 export function showHelp(print) {
   print(
