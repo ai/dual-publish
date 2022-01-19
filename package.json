@@ -15,8 +15,8 @@
     "node": ">=12.16.0"
   },
   "scripts": {
-    "unit": "tsm node_modules/uvu/bin.js . '\\.test\\.(ts|js)$'",
-    "test": "c8 pnpm unit && eslint . && yaspeller *.md"
+    "unit": "uvu . '\\.test\\.js$'",
+    "test": "c8 pnpm unit && eslint ."
   },
   "dependencies": {
     "clean-publish": "^4.0.0",
