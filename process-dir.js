@@ -2,8 +2,8 @@ import { promises as fs, existsSync } from 'fs'
 import { dirname, join, sep } from 'path'
 import { promisify } from 'util'
 import lineColumn from 'line-column'
+import { globby } from 'globby'
 import rimrafCb from 'rimraf'
-import globby from 'globby'
 
 let rimraf = promisify(rimrafCb)
 
