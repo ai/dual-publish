@@ -12,7 +12,7 @@
   "type": "module",
   "bin": "./bin.js",
   "engines": {
-    "node": ">=12.16.0"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "unit": "node test/index.test.js",
