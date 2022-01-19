@@ -1,3 +1,4 @@
+import { equal, match, not } from 'uvu/assert'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { promisify } from 'util'
@@ -5,7 +6,7 @@ import { nanoid } from 'nanoid/non-secure'
 import browserify from 'browserify'
 import { tmpdir } from 'os'
 import { globby } from 'globby'
-import { jest } from '@jest/globals'
+import { test } from 'uvu'
 import webpack from 'webpack'
 import metro from 'metro'
 import child from 'child_process'
@@ -17,9 +18,7 @@ let exec = promisify(child.exec)
 
 let toClean = []
 
-afterEach(() => Promise.all(toClean.map(i => fse.remove(i))))
-
-jest.setTimeout(15000)
+test.after.each(() => Promise.all(toClean.map(i => fse.remove(i))))
 
 let esmNode = 'node '
 if (process.version.startsWith('v12.')) {
@@ -81,7 +80,7 @@ async function buildWithWebpack(path, extra = {}) {
   return join(dirname(path), 'main.js')
 }
 
-it('compiles for Node.js', async () => {
+test('compiles for Node.js', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
   await replaceConsole(lib)
@@ -90,8 +89,9 @@ it('compiles for Node.js', async () => {
   let cjs = await exec('node ' + join(runner, 'index.cjs'), {
     env: { NODE_ENV: 'development' }
   })
-  expect(cjs.stderr).toBe('')
-  expect(cjs.stdout).toBe(
+  equal(cjs.stderr, '')
+  equal(
+    cjs.stdout,
     'cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\ncjs f-dev\ncjs g-node-dev\n'
   )
 
@@ -99,14 +99,15 @@ it('compiles for Node.js', async () => {
     let esm = await exec(esmNode + join(runner, 'index.mjs'), {
       env: { NODE_ENV: 'development' }
     })
-    expect(esm.stderr).toBe('')
-    expect(esm.stdout).toBe(
+    equal(esm.stderr, '')
+    equal(
+      esm.stdout,
       'esm d\nesm a\nesm b\nesm c\nesm lib\nesm f-dev\nesm g-node-dev\n'
     )
   }
 })
 
-it('compiles for production Node.js', async () => {
+test('compiles for production Node.js', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
   await replaceConsole(lib)
@@ -115,8 +116,9 @@ it('compiles for production Node.js', async () => {
   let cjs = await exec('node ' + join(runner, 'index.cjs'), {
     env: { NODE_ENV: 'production' }
   })
-  expect(cjs.stderr).toBe('')
-  expect(cjs.stdout).toBe(
+  equal(cjs.stderr, '')
+  equal(
+    cjs.stdout,
     'cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\ncjs f-prod\ncjs g-node-prod\n'
   )
 
@@ -124,61 +126,62 @@ it('compiles for production Node.js', async () => {
     let esm = await exec(esmNode + join(runner, 'index.mjs'), {
       env: { NODE_ENV: 'development' }
     })
-    expect(esm.stderr).toBe('')
-    expect(esm.stdout).toBe(
+    equal(esm.stderr, '')
+    equal(
+      esm.stdout,
       'esm d\nesm a\nesm b\nesm c\nesm lib\nesm f-dev\nesm g-node-dev\n'
     )
   }
 })
 
-it('compiles default export for Node.js', async () => {
+test('compiles default export for Node.js', async () => {
   let [lib, runner] = await copyDirs('default-lib', 'default-runner')
   await processDir(lib)
   await replaceConsole(lib)
   await exec(`yarn add lib@${lib}`, { cwd: runner })
 
   let cjs = await exec('node ' + join(runner, 'index.cjs'))
-  expect(cjs.stdout).toBe('cjs a\ncjs lib\n')
+  equal(cjs.stdout, 'cjs a\ncjs lib\n')
 
   if (!process.version.startsWith('v10.')) {
     let esm = await exec(esmNode + join(runner, 'index.mjs'))
-    expect(esm.stdout).toBe('esm a\nesm lib\n')
+    equal(esm.stdout, 'esm a\nesm lib\n')
   }
 })
 
-it('allows to use sub-files for Node.js', async () => {
+test('allows to use sub-files for Node.js', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
   await replaceConsole(lib)
   await exec(`yarn add lib@${lib}`, { cwd: runner })
 
   let cjs = await exec('node ' + join(runner, 'subfile.cjs'))
-  expect(cjs.stdout).toBe('cjs a\n')
+  equal(cjs.stdout, 'cjs a\n')
 
   if (!process.version.startsWith('v10.')) {
     let esm = await exec(esmNode + join(runner, 'subfile.mjs'))
-    expect(esm.stdout).toBe('esm a\n')
+    equal(esm.stdout, 'esm a\n')
   }
 })
 
-it('reads npmignore', async () => {
+test('reads npmignore', async () => {
   let [lib] = await copyDirs('lib')
   await processDir(lib)
   let files = await globby('**/*.cjs', { cwd: lib })
-  expect(files).not.toContain('e/index.cjs')
+  equal(files, 'e/index.cjs')
 })
 
-it('reads package.files', async () => {
+test('reads package.files', async () => {
   let [lib] = await copyDirs('files')
   await processDir(lib)
 })
 
-it('reads package.bin', async () => {
+test('reads package.bin', async () => {
   let [lib1, lib2] = await copyDirs('bin1', 'bin2')
   await Promise.all([processDir(lib1), processDir(lib2)])
 })
 
-it('throws on non-index file', async () => {
+test('throws on non-index file', async () => {
   let [lib] = await copyDirs('non-index-error')
   let err
   try {
@@ -186,10 +189,10 @@ it('throws on non-index file', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toBe('Rename file.js to file/index.js')
+  equal(err.message, 'Rename file.js to file/index.js')
 })
 
-it('throws on index require without .js', async () => {
+test('throws on index require without .js', async () => {
   let [lib] = await copyDirs('non-js-index-error')
   let err
   try {
@@ -197,12 +200,10 @@ it('throws on index require without .js', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toBe(
-    'Replace `index` in require() to `index.js` at index.js'
-  )
+  equal(err.message, 'Replace `index` in require() to `index.js` at index.js')
 })
 
-it('throws on un-processed require', async () => {
+test('throws on un-processed require', async () => {
   let [lib] = await copyDirs('require-error')
   let err
   try {
@@ -210,13 +211,14 @@ it('throws on un-processed require', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toEqual(
+  equal(
+    err.message,
     'Unsupported require() at index.js:2:2.\n' +
       'ESM supports only top-level require with static path.'
   )
 })
 
-it('throws on un-processed export', async () => {
+test('throws on un-processed export', async () => {
   let [lib] = await copyDirs('named-export-error')
   let err
   try {
@@ -224,10 +226,10 @@ it('throws on un-processed export', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toContain('Unsupported export at index.js:1:1')
+  match(err.message, 'Unsupported export at index.js:1:1')
 })
 
-it('throws on un-processed multiline export', async () => {
+test('throws on un-processed multiline export', async () => {
   let [lib] = await copyDirs('multiline-export-error')
   let err
   try {
@@ -235,10 +237,10 @@ it('throws on un-processed multiline export', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toContain('Unsupported export at index.js:1:1')
+  match(err.message, 'Unsupported export at index.js:1:1')
 })
 
-it('throws on un-processed exports', async () => {
+test('throws on un-processed exports', async () => {
   let [lib] = await copyDirs('export-error')
   let err
   try {
@@ -246,12 +248,13 @@ it('throws on un-processed exports', async () => {
   } catch (e) {
     err = e
   }
-  expect(err.message).toBe(
+  equal(
+    err.message,
     'Replace module.exports.x to module.exports = { x } at index.js:1:1'
   )
 })
 
-it('compiles for TypeScript', async () => {
+test('compiles for TypeScript', async () => {
   let [lib, runner] = await copyDirs('lib', 'ts-runner')
   await processDir(lib)
   await replaceConsole(lib)
@@ -259,18 +262,19 @@ it('compiles for TypeScript', async () => {
   await exec('npx tsc --build ' + join(runner, 'tsconfig.json'))
 })
 
-it('works with ts-node', async () => {
+test('works with ts-node', async () => {
   let [lib, runner] = await copyDirs('lib', 'ts-node')
   await processDir(lib)
   await replaceConsole(lib)
   await exec(`yarn add lib@${lib}`, { cwd: runner })
   let { stdout } = await exec('npx ts-node ' + join(runner, 'index.ts'))
-  expect(stdout).toBe(
+  equal(
+    stdout,
     'cjs d\ncjs a\ncjs b\ncjs c\ncjs lib\ncjs f-dev\ncjs g-node-dev\n'
   )
 })
 
-it('works with modules in webpack', async () => {
+test('works with modules in webpack', async () => {
   let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
   await processDir(lib)
   await processDir(clientLib)
@@ -281,19 +285,19 @@ it('works with modules in webpack', async () => {
   let bundle = await buildWithWebpack(join(client, 'index.js'))
 
   let str = (await fse.readFile(bundle)).toString()
-  expect(str).not.toContain('shaked-export')
-  expect(str).not.toContain('cjs')
-  expect(str).toContain('esm d')
-  expect(str).toContain('esm a')
-  expect(str).toContain('esm b')
-  expect(str).toContain('esm browser c')
-  expect(str).toContain('esm lib')
-  expect(str).toContain('esm f-prod')
-  expect(str).toContain('esm g-browser-prod')
-  expect(str).not.toContain('esm f-dev')
+  not.match(str, 'shaked-export')
+  not.match(str, 'cjs')
+  match(str, 'esm d')
+  match(str, 'esm a')
+  match(str, 'esm b')
+  match(str, 'esm browser c')
+  match(str, 'esm lib')
+  match(str, 'esm f-prod')
+  match(str, 'esm g-browser-prod')
+  not.match(str, 'esm f-dev')
 })
 
-it('works with modules in esbuild', async () => {
+test('works with modules in esbuild', async () => {
   let [lib, runner] = await copyDirs('lib', 'runner')
   await processDir(lib)
   await replaceConsole(lib)
@@ -308,19 +312,19 @@ it('works with modules in esbuild', async () => {
   )
 
   let str = (await fse.readFile(bundle)).toString()
-  expect(str).not.toContain('shaked-export')
-  expect(str).not.toContain('cjs')
-  expect(str).toContain('esm d')
-  expect(str).toContain('esm a')
-  expect(str).toContain('esm b')
-  expect(str).toContain('esm browser c')
-  expect(str).toContain('esm lib')
-  expect(str).toContain('esm f-prod')
-  expect(str).toContain('esm g-browser-prod')
-  expect(str).not.toContain('esm f-dev')
+  not.match(str, 'shaked-export')
+  not.match(str, 'cjs')
+  match(str, 'esm d')
+  match(str, 'esm a')
+  match(str, 'esm b')
+  match(str, 'esm browser c')
+  match(str, 'esm lib')
+  match(str, 'esm f-prod')
+  match(str, 'esm g-browser-prod')
+  not.match(str, 'esm f-dev')
 })
 
-it('works with modules in development webpack', async () => {
+test('works with modules in development webpack', async () => {
   let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
   await processDir(lib)
   await processDir(clientLib)
@@ -333,12 +337,12 @@ it('works with modules in development webpack', async () => {
   })
 
   let str = (await fse.readFile(bundle)).toString()
-  expect(str).toContain('esm f-dev')
-  expect(str).toContain('esm g-browser-dev')
-  expect(str).not.toContain('esm f-prod')
+  match(str, 'esm f-dev')
+  match(str, 'esm g-browser-dev')
+  not.match(str, 'esm f-prod')
 })
 
-it('works with modules in Rollup', async () => {
+test('works with modules in Rollup', async () => {
   let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
   await processDir(lib)
   await processDir(clientLib)
@@ -357,19 +361,19 @@ it('works with modules in Rollup', async () => {
   )
 
   let str = (await fse.readFile(bundle)).toString()
-  expect(str).not.toContain('shaked-export')
-  expect(str).not.toContain('cjs')
-  expect(str).toContain('esm d')
-  expect(str).toContain('esm a')
-  expect(str).toContain('esm b')
-  expect(str).toContain('esm browser c')
-  expect(str).toContain('esm lib')
-  expect(str).toContain('esm f-prod')
-  expect(str).toContain('esm g-browser-prod')
-  expect(str).not.toContain('esm f-dev')
+  not.match(str, 'shaked-export')
+  not.match(str, 'cjs')
+  match(str, 'esm d')
+  match(str, 'esm a')
+  match(str, 'esm b')
+  match(str, 'esm browser c')
+  match(str, 'esm lib')
+  match(str, 'esm f-prod')
+  match(str, 'esm g-browser-prod')
+  not.match(str, 'esm f-dev')
 })
 
-it('works with modules in Parcel', async () => {
+test('works with modules in Parcel', async () => {
   let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
   await processDir(lib)
   await processDir(clientLib)
@@ -384,19 +388,19 @@ it('works with modules in Parcel', async () => {
   )
 
   let str = (await fse.readFile(join(client, 'bundle.js'))).toString()
-  expect(str).not.toContain('shaked-export')
-  expect(str).not.toContain('cjs')
-  expect(str).toContain('esm d')
-  expect(str).toContain('esm a')
-  expect(str).toContain('esm b')
-  expect(str).toContain('esm browser c')
-  expect(str).toContain('esm lib')
-  expect(str).toContain('esm f-prod')
-  expect(str).toContain('esm g-browser-prod')
-  expect(str).not.toContain('esm f-dev')
+  not.match(str, 'shaked-export')
+  not.match(str, 'cjs')
+  match(str, 'esm d')
+  match(str, 'esm a')
+  match(str, 'esm b')
+  match(str, 'esm browser c')
+  match(str, 'esm lib')
+  match(str, 'esm f-prod')
+  match(str, 'esm g-browser-prod')
+  not.match(str, 'esm f-dev')
 })
 
-it('works with modules in developer Parcel', async () => {
+test('works with modules in developer Parcel', async () => {
   let [lib, clientLib, client] = await copyDirs('lib', 'client-lib', 'client')
   await processDir(lib)
   await processDir(clientLib)
@@ -411,12 +415,12 @@ it('works with modules in developer Parcel', async () => {
   )
 
   let str = (await fse.readFile(join(client, 'bundle.js'))).toString()
-  expect(str).toContain('esm f-dev')
-  expect(str).toContain('esm g-browser-dev')
-  expect(str).not.toContain('esm f-prod')
+  match(str, 'esm f-dev')
+  match(str, 'esm g-browser-dev')
+  not.match(str, 'esm f-prod')
 })
 
-it('compiles for React Native', async () => {
+test('compiles for React Native', async () => {
   let [lib, runner] = await copyDirs('rn-lib', 'rn-runner')
   await processDir(lib)
   await replaceConsole(lib)
@@ -441,16 +445,16 @@ it('compiles for React Native', async () => {
     minify: false,
     sourceMap: false
   })
-  expect(code).toContain("console.log('native a')")
-  expect(code).toContain("console.log('esm b')")
-  expect(code).toContain("console.log('esm c')")
+  match(code, "console.log('native a')")
+  match(code, "console.log('esm b')")
+  match(code, "console.log('esm c')")
 })
 
-it('copy package.json fields as a conditions for exports field', async () => {
+test('copy package.json fields as a conditions for exports field', async () => {
   let [normalizeCss] = await copyDirs('normalize-css')
   await processDir(normalizeCss)
   let pkg = await fse.readFile(join(normalizeCss, 'package.json'))
-  expect(JSON.parse(pkg.toString())).toEqual({
+  equal(JSON.parse(pkg.toString()), {
     'name': 'normalize-css',
     'style': './index.css',
     'styl': './index.css',
@@ -478,14 +482,14 @@ it('copy package.json fields as a conditions for exports field', async () => {
   })
 })
 
-it('supports process.env.NODE_ENV', async () => {
+test('supports process.env.NODE_ENV', async () => {
   let [nodeEnv] = await copyDirs('node-env')
   await processDir(nodeEnv)
   await replaceConsole(nodeEnv)
   let packageJsonContent = JSON.parse(
     (await fse.readFile(join(nodeEnv, 'package.json'))).toString()
   )
-  expect(packageJsonContent.exports['.']).toEqual({
+  equal(packageJsonContent.exports['.'], {
     browser: {
       production: './index.prod.js',
       development: './index.dev.js',
@@ -496,7 +500,7 @@ it('supports process.env.NODE_ENV', async () => {
     default: './index.js'
   })
 
-  expect(packageJsonContent.exports['./a']).toEqual({
+  equal(packageJsonContent.exports['./a'], {
     browser: {
       production: './a/index.prod.js',
       development: './a/index.dev.js',
@@ -511,7 +515,7 @@ it('supports process.env.NODE_ENV', async () => {
     (await fse.readFile(join(nodeEnv, 'a/package.json'))).toString()
   )
 
-  expect(nestedPackageJsonContent).toEqual({
+  equal(nestedPackageJsonContent, {
     'browser': {
       './index.cjs': './index.browser.cjs',
       './index.js': './index.browser.js'
@@ -534,12 +538,13 @@ it('supports process.env.NODE_ENV', async () => {
   let browserDerivedDev = (
     await fse.readFile(join(nodeEnv, 'a/index.dev.js'))
   ).toString()
-  expect(indexDerivedDev).toContain('if (false) {')
-  expect(indexDerivedDev).toContain('if (2+3||true&& 2 + 2) {')
-  expect(indexDerivedProd).toContain('if (true) {')
-  expect(indexDerivedProd).toContain('if (2+3||false&& 2 + 2) {')
+  match(indexDerivedDev, 'if (false) {')
+  match(indexDerivedDev, 'if (2+3||true&& 2 + 2) {')
+  match(indexDerivedProd, 'if (true) {')
+  match(indexDerivedProd, 'if (2+3||false&& 2 + 2) {')
 
-  expect(indexDerivedProd).toContain(
+  match(
+    indexDerivedProd,
     'if (true&&false\n' +
       '  ||\n' +
       '  true\n' +
@@ -549,7 +554,8 @@ it('supports process.env.NODE_ENV', async () => {
       "  console.log('dev mode')\n" +
       '}'
   )
-  expect(indexDerivedDev).toContain(
+  match(
+    indexDerivedDev,
     'if (false&&true\n' +
       '  ||\n' +
       '  false\n' +
@@ -560,19 +566,19 @@ it('supports process.env.NODE_ENV', async () => {
       '}'
   )
 
-  expect(indexDerivedDev).toContain('false||1')
-  expect(indexDerivedProd).toContain('true||1')
+  match(indexDerivedDev, 'false||1')
+  match(indexDerivedProd, 'true||1')
 
-  expect(browserDerivedDev).toContain("console.log('esm browser a')")
-  expect(browserDerivedDev).toContain('if (true) {')
-  expect(browserDerivedProd).toContain("console.log('esm browser a')")
-  expect(browserDerivedProd).toContain('if (false) {')
+  match(browserDerivedDev, "console.log('esm browser a')")
+  match(browserDerivedDev, 'if (true) {')
+  match(browserDerivedProd, "console.log('esm browser a')")
+  match(browserDerivedProd, 'if (false) {')
 
-  expect(browserDerivedProd).toContain("console.log('esm browser a')")
-  expect(browserDerivedProd).toContain('if (false) {')
+  match(browserDerivedProd, "console.log('esm browser a')")
+  match(browserDerivedProd, 'if (false) {')
 })
 
-it('supports Browserify', async () => {
+test('supports Browserify', async () => {
   let [lib, client] = await copyDirs('lib', 'client-cjs')
 
   await processDir(lib)
@@ -593,9 +599,12 @@ it('supports Browserify', async () => {
   await fse.writeFile(runner, str)
 
   let cjs = await exec('node ' + runner)
-  expect(cjs.stderr).toBe('')
-  expect(cjs.stdout).toEqual(
+  equal(cjs.stderr, '')
+  equal(
+    cjs.stdout,
     'cjs d\ncjs a\ncjs b\ncjs browser c\n' +
       'cjs lib\ncjs f-dev\ncjs g-browser-dev\n'
   )
 })
+
+test.run()
