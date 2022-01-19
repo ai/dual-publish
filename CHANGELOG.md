@@ -1,6 +1,11 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 3.0
+* Removed Node.js 14 and 12 support.
+* Moved to `clean-publish` 4.
+* Reduced dependencies.
+
 ## 2.0.2
 * Fixed `--help` error.
 
