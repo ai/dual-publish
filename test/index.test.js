@@ -21,7 +21,8 @@ let toClean = []
 test.after.each(() => Promise.all(toClean.map(i => fse.remove(i))))
 
 let esmNode = 'node '
-if (process.version.startsWith('v12.')) {
+let nodeVersion = parseInt(process.version.slice(1))
+if (nodeVersion === 12) {
   esmNode = 'node --experimental-modules '
 }
 
@@ -162,13 +163,6 @@ test('allows to use sub-files for Node.js', async () => {
     let esm = await exec(esmNode + join(runner, 'subfile.mjs'))
     equal(esm.stdout, 'esm a\n')
   }
-})
-
-test('reads npmignore', async () => {
-  let [lib] = await copyDirs('lib')
-  await processDir(lib)
-  let files = await glob('**/*.cjs', { cwd: lib })
-  equal(files, 'e/index.cjs')
 })
 
 test('reads package.files', async () => {
@@ -420,35 +414,37 @@ test('works with modules in developer Parcel', async () => {
   not.match(str, 'esm f-prod')
 })
 
-test('compiles for React Native', async () => {
-  let [lib, runner] = await copyDirs('rn-lib', 'rn-runner')
-  await processDir(lib)
-  await replaceConsole(lib)
-  await exec(`yarn add rn-lib@${lib}`, { cwd: runner })
+if (nodeVersion <= 16) {
+  test('compiles for React Native', async () => {
+    let [lib, runner] = await copyDirs('rn-lib', 'rn-runner')
+    await processDir(lib)
+    await replaceConsole(lib)
+    await exec(`yarn add rn-lib@${lib}`, { cwd: runner })
 
-  let config = {
-    ...(await metro.loadConfig()),
-    projectRoot: runner,
-    watchFolders: [runner, join(testRoot, '..', 'node_modules')],
-    reporter: { update: () => {} },
-    cacheStores: [],
-    resetCache: true,
-    resolver: {
-      resolverMainFields: ['react-native', 'browser', 'main']
-    },
-    transformer: {
-      babelTransformerPath: 'metro-react-native-babel-transformer'
+    let config = {
+      ...(await metro.loadConfig()),
+      projectRoot: runner,
+      watchFolders: [runner, join(testRoot, '..', 'node_modules')],
+      reporter: { update: () => {} },
+      cacheStores: [],
+      resetCache: true,
+      resolver: {
+        resolverMainFields: ['react-native', 'browser', 'main']
+      },
+      transformer: {
+        babelTransformerPath: 'metro-react-native-babel-transformer'
+      }
     }
-  }
-  let { code } = await metro.runBuild(config, {
-    entry: 'index.js',
-    minify: false,
-    sourceMap: false
+    let { code } = await metro.runBuild(config, {
+      entry: 'index.js',
+      minify: false,
+      sourceMap: false
+    })
+    match(code, "console.log('native a')")
+    match(code, "console.log('esm b')")
+    match(code, "console.log('esm c')")
   })
-  match(code, "console.log('native a')")
-  match(code, "console.log('esm b')")
-  match(code, "console.log('esm c')")
-})
+}
 
 test('copy package.json fields as a conditions for exports field', async () => {
   let [normalizeCss] = await copyDirs('normalize-css')
