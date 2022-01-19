@@ -15,7 +15,7 @@
     "node": ">=12.16.0"
   },
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage && eslint . && yaspeller *.md"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage && eslint . && yaspeller *.md"
   },
   "dependencies": {
     "clean-publish": "^4.0.0",
