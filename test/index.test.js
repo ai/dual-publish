@@ -5,11 +5,11 @@ import { promisify } from 'util'
 import { nanoid } from 'nanoid/non-secure'
 import browserify from 'browserify'
 import { tmpdir } from 'os'
-import { globby } from 'globby'
 import { test } from 'uvu'
 import webpack from 'webpack'
 import metro from 'metro'
 import child from 'child_process'
+import glob from 'fast-glob'
 import fse from 'fs-extra'
 
 import { processDir } from '../process-dir.js'
@@ -39,7 +39,7 @@ function copyDirs(...dirs) {
 }
 
 async function replaceConsole(dir) {
-  let files = await globby('**/*.js', { cwd: dir, absolute: true })
+  let files = await glob('**/*.js', { cwd: dir, absolute: true })
   await Promise.all(
     files
       .filter(i => !i.includes('.cjs.'))
@@ -167,7 +167,7 @@ test('allows to use sub-files for Node.js', async () => {
 test('reads npmignore', async () => {
   let [lib] = await copyDirs('lib')
   await processDir(lib)
-  let files = await globby('**/*.cjs', { cwd: lib })
+  let files = await glob('**/*.cjs', { cwd: lib })
   equal(files, 'e/index.cjs')
 })
 

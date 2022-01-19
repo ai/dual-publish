@@ -1,11 +1,7 @@
 import { promises as fs, existsSync } from 'fs'
 import { dirname, join, sep } from 'path'
-import { promisify } from 'util'
 import lineColumn from 'line-column'
-import { globby } from 'globby'
-import rimrafCb from 'rimraf'
-
-let rimraf = promisify(rimrafCb)
+import glob from 'fast-glob'
 
 const NAME = /(^|\n)(let\s+|const\s+|var\s+)(\S+|{[^}]+})\s*=/m
 
@@ -249,8 +245,10 @@ async function process(dir) {
 
   removePatterns.push('**/*.test.js', '**/*.spec.js')
 
-  let removeFiles = await globby(removePatterns, { cwd: dir })
-  await Promise.all(removeFiles.map(i => rimraf(join(dir, i))))
+  let removeFiles = await glob(removePatterns, { cwd: dir })
+  await Promise.all(
+    removeFiles.map(i => fs.rm(join(dir, i), { recursive: true, force: true }))
+  )
   await removeEmpty(dir)
 
   let pattern = '**/*.js'
@@ -268,7 +266,7 @@ async function process(dir) {
     }
   }
 
-  let all = await globby(pattern, { ignore: ignorePatterns, cwd: dir })
+  let all = await glob(pattern, { ignore: ignorePatterns, cwd: dir })
 
   let sources = await Promise.all(
     all.map(async file => {
@@ -330,7 +328,7 @@ async function removeEmpty(dir) {
   }
 
   if (entries.length === 0) {
-    await rimraf(dir)
+    await fs.rm(dir, { recursive: true, force: true })
   }
 }
 
@@ -338,7 +336,7 @@ export async function processDir(dir) {
   try {
     await process(dir)
   } catch (e) {
-    await rimraf(dir)
+    await fs.rm(dir, { recursive: true, force: true })
     throw e
   }
 }
