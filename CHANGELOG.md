@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 3.0.1
+* Fixed `exports` order for `enhanced-resolve` support.
+
 ## 3.0
 * Removed Node.js 14 and 12 support.
 * Moved to `clean-publish` 4.
