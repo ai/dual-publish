@@ -155,6 +155,14 @@ async function replacePackage(dir, file, files, envTargets) {
 
     pkg.exports = {}
     pkg.exports['.'] = {}
+
+    for (let type of ['types', 'style', 'styl', 'sass', 'less']) {
+      if (pkg[type]) {
+        pkg.exports[pkg[type]] = pkg[type]
+        pkg.exports['.'][type] = pkg[type]
+      }
+    }
+
     for (let i of files) {
       let path = '.'
       if (i.endsWith('.browser.js') || i.endsWith('.native.js')) continue
@@ -176,13 +184,6 @@ async function replacePackage(dir, file, files, envTargets) {
       pkg.exports[path].require = path + '/index.cjs'
       pkg.exports[path].import = path + '/index.js'
       pkg.exports[path].default = path + '/index.js'
-    }
-
-    for (let type of ['types', 'style', 'styl', 'sass', 'less']) {
-      if (pkg[type]) {
-        pkg.exports[pkg[type]] = pkg[type]
-        pkg.exports['.'][type] = pkg[type]
-      }
     }
 
     if (Object.keys(pkg.browser).length === 0) delete pkg.browser
