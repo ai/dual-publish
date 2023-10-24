@@ -129,6 +129,26 @@ async function replaceToCJS(dir, file, source) {
   await fs.writeFile(join(dir, file.replace(/\.js$/, '.cjs')), cjs)
 }
 
+async function cloneTypesFile(dir, file) {
+  let pkgFile = join(dir, dirname(file), 'package.json')
+  if (!existsSync(pkgFile)) {
+    return
+  }
+  let pkg = JSON.parse(await fs.readFile(pkgFile))
+  if (pkg.types === undefined) {
+    return
+  }
+
+  if (!pkg.types.endsWith('.d.ts')) {
+    throw error('The types file extension must be .d.ts.')
+  }
+
+  let typesFile = join(dir, dirname(file), pkg.types)
+  let cjsTypesFile = typesFile.substring(0, typesFile.length - 5) + '.d.cts' // explicitely marks the module as CommonJS
+
+  await fs.copyFile(typesFile, cjsTypesFile)
+}
+
 async function replacePackage(dir, file, files, envTargets) {
   let pkgFile = join(dir, dirname(file), 'package.json')
   let pkg = {}
@@ -156,7 +176,7 @@ async function replacePackage(dir, file, files, envTargets) {
     pkg.exports = {}
     pkg.exports['.'] = {}
 
-    for (let type of ['types', 'style', 'styl', 'sass', 'less']) {
+    for (let type of ['style', 'styl', 'sass', 'less']) {
       if (pkg[type]) {
         pkg.exports[pkg[type]] = pkg[type]
         pkg.exports['.'][type] = pkg[type]
@@ -181,9 +201,20 @@ async function replacePackage(dir, file, files, envTargets) {
       } else if (files.includes(i.replace(/\.js$/, '.browser.js'))) {
         pkg.exports[path].browser = path + '/index.browser.js'
       }
-      pkg.exports[path].require = path + '/index.cjs'
-      pkg.exports[path].import = path + '/index.js'
-      pkg.exports[path].default = path + '/index.js'
+      
+      let cjsPath = path + '/index.cjs'
+      let esmPath = path + '/index.js'
+
+      if (pkg.types !== undefined && pkg.types.endsWith('.d.ts')) {
+        pkg.exports[path].require = { types: `${pkg.types.substring(0, pkg.types.length - 5)}.d.cts`, 'default': cjsPath }
+        pkg.exports[path].import = { types: pkg.types, 'default': esmPath }
+        pkg.exports[path].default = esmPath
+        continue
+      }
+
+      pkg.exports[path].require = cjsPath
+      pkg.exports[path].import = esmPath
+      pkg.exports[path].default = esmPath
     }
 
     if (Object.keys(pkg.browser).length === 0) delete pkg.browser
@@ -312,6 +343,7 @@ async function process(dir) {
               await replaceEnvConditions(dir, file, modifiedSource)
             }
           })(),
+          cloneTypesFile(dir, file),
           replacePackage(dir, file, files, envTargets)
         ])
       }
