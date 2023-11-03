@@ -15,7 +15,9 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test": "bnt && eslint ."
+    "test:unit": "bnt",
+    "test:lint": "eslint .",
+    "test": "pnpm run /^test:/"
   },
   "dependencies": {
     "clean-publish": "^4.2.0",
