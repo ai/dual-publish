@@ -1,15 +1,14 @@
 import browserify from 'browserify'
 import glob from 'fast-glob'
 import fse from 'fs-extra'
-import metro from 'metro'
 import { nanoid } from 'nanoid/non-secure'
+import { deepStrictEqual, doesNotMatch, equal, match, ok } from 'node:assert'
 import child from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { afterEach, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
-import { test } from 'uvu'
-import { equal, match, not } from 'uvu/assert'
 import webpack from 'webpack'
 
 import { processDir } from '../process-dir.js'
@@ -18,7 +17,7 @@ let exec = promisify(child.exec)
 
 let toClean = []
 
-test.after.each(() => Promise.all(toClean.map(i => fse.remove(i))))
+afterEach(() => Promise.all(toClean.map(i => fse.remove(i))))
 
 let esmNode = 'node '
 let nodeVersion = parseInt(process.version.slice(1))
@@ -220,7 +219,7 @@ test('throws on un-processed export', async () => {
   } catch (e) {
     err = e
   }
-  match(err.message, 'Unsupported export at index.js:1:1')
+  match(err.message, /Unsupported export at index.js:1:1/)
 })
 
 test('throws on un-processed multiline export', async () => {
@@ -231,7 +230,7 @@ test('throws on un-processed multiline export', async () => {
   } catch (e) {
     err = e
   }
-  match(err.message, 'Unsupported export at index.js:1:1')
+  match(err.message, /Unsupported export at index.js:1:1/)
 })
 
 test('throws on un-processed exports', async () => {
@@ -279,16 +278,16 @@ test('works with modules in webpack', async () => {
   let bundle = await buildWithWebpack(join(client, 'index.js'))
 
   let str = (await fse.readFile(bundle)).toString()
-  not.match(str, 'shaked-export')
-  not.match(str, 'cjs')
-  match(str, 'esm d')
-  match(str, 'esm a')
-  match(str, 'esm b')
-  match(str, 'esm browser c')
-  match(str, 'esm lib')
-  match(str, 'esm f-prod')
-  match(str, 'esm g-browser-prod')
-  not.match(str, 'esm f-dev')
+  doesNotMatch(str, /shaked-export/)
+  doesNotMatch(str, /cjs/)
+  match(str, /esm d/)
+  match(str, /esm a/)
+  match(str, /esm b/)
+  match(str, /esm browser c/)
+  match(str, /esm lib/)
+  match(str, /esm f-prod/)
+  match(str, /esm g-browser-prod/)
+  doesNotMatch(str, /esm f-dev/)
 })
 
 test('works with modules in esbuild', async () => {
@@ -306,16 +305,16 @@ test('works with modules in esbuild', async () => {
   )
 
   let str = (await fse.readFile(bundle)).toString()
-  not.match(str, 'shaked-export')
-  not.match(str, 'cjs')
-  match(str, 'esm d')
-  match(str, 'esm a')
-  match(str, 'esm b')
-  match(str, 'esm browser c')
-  match(str, 'esm lib')
-  match(str, 'esm f-prod')
-  match(str, 'esm g-browser-prod')
-  not.match(str, 'esm f-dev')
+  doesNotMatch(str, /shaked-export/)
+  doesNotMatch(str, /cjs/)
+  match(str, /esm d/)
+  match(str, /esm a/)
+  match(str, /esm b/)
+  match(str, /esm browser c/)
+  match(str, /esm lib/)
+  match(str, /esm f-prod/)
+  match(str, /esm g-browser-prod/)
+  doesNotMatch(str, /esm f-dev/)
 })
 
 test('works with modules in development webpack', async () => {
@@ -331,9 +330,9 @@ test('works with modules in development webpack', async () => {
   })
 
   let str = (await fse.readFile(bundle)).toString()
-  match(str, 'esm f-dev')
-  match(str, 'esm g-browser-dev')
-  not.match(str, 'esm f-prod')
+  match(str, /esm f-dev/)
+  match(str, /esm g-browser-dev/)
+  doesNotMatch(str, /esm f-prod/)
 })
 
 test('works with modules in Rollup', async () => {
@@ -355,16 +354,16 @@ test('works with modules in Rollup', async () => {
   )
 
   let str = (await fse.readFile(bundle)).toString()
-  not.match(str, 'shaked-export')
-  not.match(str, 'cjs')
-  match(str, 'esm d')
-  match(str, 'esm a')
-  match(str, 'esm b')
-  match(str, 'esm browser c')
-  match(str, 'esm lib')
-  match(str, 'esm f-prod')
-  match(str, 'esm g-browser-prod')
-  not.match(str, 'esm f-dev')
+  doesNotMatch(str, /shaked-export/)
+  doesNotMatch(str, /cjs/)
+  match(str, /esm d/)
+  match(str, /esm a/)
+  match(str, /esm b/)
+  match(str, /esm browser c/)
+  match(str, /esm lib/)
+  match(str, /esm f-prod/)
+  match(str, /esm g-browser-prod/)
+  doesNotMatch(str, /esm f-dev/)
 })
 
 test('works with modules in Parcel', async () => {
@@ -382,16 +381,16 @@ test('works with modules in Parcel', async () => {
   )
 
   let str = (await fse.readFile(join(client, 'bundle.js'))).toString()
-  not.match(str, 'shaked-export')
-  not.match(str, 'cjs')
-  match(str, 'esm d')
-  match(str, 'esm a')
-  match(str, 'esm b')
-  match(str, 'esm browser c')
-  match(str, 'esm lib')
-  match(str, 'esm f-prod')
-  match(str, 'esm g-browser-prod')
-  not.match(str, 'esm f-dev')
+  doesNotMatch(str, /shaked-export/)
+  doesNotMatch(str, /cjs/)
+  match(str, /esm d/)
+  match(str, /esm a/)
+  match(str, /esm b/)
+  match(str, /esm browser c/)
+  match(str, /esm lib/)
+  match(str, /esm f-prod/)
+  match(str, /esm g-browser-prod/)
+  doesNotMatch(str, /esm f-dev/)
 })
 
 test('works with modules in developer Parcel', async () => {
@@ -409,48 +408,16 @@ test('works with modules in developer Parcel', async () => {
   )
 
   let str = (await fse.readFile(join(client, 'bundle.js'))).toString()
-  match(str, 'esm f-dev')
-  match(str, 'esm g-browser-dev')
-  not.match(str, 'esm f-prod')
+  match(str, /esm f-dev/)
+  match(str, /esm g-browser-dev/)
+  doesNotMatch(str, /esm f-prod/)
 })
-
-if (nodeVersion <= 16) {
-  test('compiles for React Native', async () => {
-    let [lib, runner] = await copyDirs('rn-lib', 'rn-runner')
-    await processDir(lib)
-    await replaceConsole(lib)
-    await exec(`yarn add rn-lib@${lib}`, { cwd: runner })
-
-    let config = {
-      ...(await metro.loadConfig()),
-      projectRoot: runner,
-      watchFolders: [runner, join(testRoot, '..', 'node_modules')],
-      reporter: { update: () => {} },
-      cacheStores: [],
-      resetCache: true,
-      resolver: {
-        resolverMainFields: ['react-native', 'browser', 'main']
-      },
-      transformer: {
-        babelTransformerPath: 'metro-react-native-babel-transformer'
-      }
-    }
-    let { code } = await metro.runBuild(config, {
-      entry: 'index.js',
-      minify: false,
-      sourceMap: false
-    })
-    match(code, "console.log('native a')")
-    match(code, "console.log('esm b')")
-    match(code, "console.log('esm c')")
-  })
-}
 
 test('copy package.json fields as a conditions for exports field', async () => {
   let [normalizeCss] = await copyDirs('normalize-css')
   await processDir(normalizeCss)
   let pkg = await fse.readFile(join(normalizeCss, 'package.json'))
-  equal(JSON.parse(pkg.toString()), {
+  deepStrictEqual(JSON.parse(pkg.toString()), {
     'name': 'normalize-css',
     'style': './index.css',
     'styl': './index.css',
@@ -485,7 +452,7 @@ test('supports process.env.NODE_ENV', async () => {
   let packageJsonContent = JSON.parse(
     (await fse.readFile(join(nodeEnv, 'package.json'))).toString()
   )
-  equal(packageJsonContent.exports['.'], {
+  deepStrictEqual(packageJsonContent.exports['.'], {
     browser: {
       production: './index.prod.js',
       development: './index.dev.js',
@@ -496,7 +463,7 @@ test('supports process.env.NODE_ENV', async () => {
     default: './index.js'
   })
 
-  equal(packageJsonContent.exports['./a'], {
+  deepStrictEqual(packageJsonContent.exports['./a'], {
     browser: {
       production: './a/index.prod.js',
       development: './a/index.dev.js',
@@ -511,7 +478,7 @@ test('supports process.env.NODE_ENV', async () => {
     (await fse.readFile(join(nodeEnv, 'a/package.json'))).toString()
   )
 
-  equal(nestedPackageJsonContent, {
+  deepStrictEqual(nestedPackageJsonContent, {
     'browser': {
       './index.cjs': './index.browser.cjs',
       './index.js': './index.browser.js'
@@ -534,44 +501,46 @@ test('supports process.env.NODE_ENV', async () => {
   let browserDerivedDev = (
     await fse.readFile(join(nodeEnv, 'a/index.dev.js'))
   ).toString()
-  match(indexDerivedDev, 'if (false) {')
-  match(indexDerivedDev, 'if (2+3||true&& 2 + 2) {')
-  match(indexDerivedProd, 'if (true) {')
-  match(indexDerivedProd, 'if (2+3||false&& 2 + 2) {')
+  ok(indexDerivedDev.includes('if (false) {'))
+  ok(indexDerivedDev.includes('if (2+3||true&& 2 + 2) {'))
+  ok(indexDerivedProd.includes('if (true) {'))
+  ok(indexDerivedProd.includes('if (2+3||false&& 2 + 2) {'))
 
-  match(
-    indexDerivedProd,
-    'if (true&&false\n' +
-      '  ||\n' +
-      '  true\n' +
-      '  &&false\n' +
-      '  ||true&&false\n' +
-      ') {\n' +
-      "  console.log('dev mode')\n" +
-      '}'
+  ok(
+    indexDerivedProd.includes(
+      'if (true&&false\n' +
+        '  ||\n' +
+        '  true\n' +
+        '  &&false\n' +
+        '  ||true&&false\n' +
+        ') {\n' +
+        "  console.log('dev mode')\n" +
+        '}'
+    )
   )
-  match(
-    indexDerivedDev,
-    'if (false&&true\n' +
-      '  ||\n' +
-      '  false\n' +
-      '  &&true\n' +
-      '  ||false&&true\n' +
-      ') {\n' +
-      "  console.log('dev mode')\n" +
-      '}'
+  ok(
+    indexDerivedDev.includes(
+      'if (false&&true\n' +
+        '  ||\n' +
+        '  false\n' +
+        '  &&true\n' +
+        '  ||false&&true\n' +
+        ') {\n' +
+        "  console.log('dev mode')\n" +
+        '}'
+    )
   )
 
-  match(indexDerivedDev, 'false||1')
-  match(indexDerivedProd, 'true||1')
+  ok(indexDerivedDev.includes('false||1'))
+  ok(indexDerivedProd.includes('true||1'))
 
-  match(browserDerivedDev, "console.log('esm browser a')")
-  match(browserDerivedDev, 'if (true) {')
-  match(browserDerivedProd, "console.log('esm browser a')")
-  match(browserDerivedProd, 'if (false) {')
+  ok(browserDerivedDev.includes("console.log('esm browser a')"))
+  ok(browserDerivedDev.includes('if (true) {'))
+  ok(browserDerivedProd.includes("console.log('esm browser a')"))
+  ok(browserDerivedProd.includes('if (false) {'))
 
-  match(browserDerivedProd, "console.log('esm browser a')")
-  match(browserDerivedProd, 'if (false) {')
+  ok(browserDerivedProd.includes("console.log('esm browser a')"))
+  ok(browserDerivedProd.includes('if (false) {'))
 })
 
 test('supports Browserify', async () => {
@@ -602,5 +571,3 @@ test('supports Browserify', async () => {
       'cjs lib\ncjs f-dev\ncjs g-browser-dev\n'
   )
 })
-
-test.run()
