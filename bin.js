@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-import { fileURLToPath } from 'url'
-import { join } from 'path'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-import { showVersion } from './show-version.js'
-import { showHelp } from './show-help.js'
 import { cli } from './cli.js'
+import { showHelp } from './show-help.js'
+import { showVersion } from './show-version.js'
 
 let dirname = join(fileURLToPath(import.meta.url), '..')
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-import { promises as fs } from 'fs'
-import { dirname, join } from 'path'
+import { promises as fs } from 'node:fs'
+import { dirname, join } from 'node:path'
 import pico from 'picocolors'
 
-import { processDir } from './process-dir.js'
 import { cli } from './cli.js'
+import { processDir } from './process-dir.js'
 
 cli(async (args, print) => {
   let tmpdir = join(process.cwd(), args[0])

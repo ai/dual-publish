@@ -1,7 +1,7 @@
-import { promises as fs, existsSync } from 'fs'
-import { dirname, join, sep } from 'path'
-import lineColumn from 'line-column'
 import glob from 'fast-glob'
+import lineColumn from 'line-column'
+import { existsSync, promises as fs } from 'node:fs'
+import { dirname, join, sep } from 'node:path'
 
 const NAME = /(^|\n)(let\s+|const\s+|var\s+)(\S+|{[^}]+})\s*=/m
 
