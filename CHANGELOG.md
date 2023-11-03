@@ -1,6 +1,10 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 4.0
+* Removed Node.js 16 support.
+* Fixed TypeScript `node16` support (by Saadi Myftija).
+
 ## 3.0.1
 * Fixed `exports` order for `enhanced-resolve` support.
 
